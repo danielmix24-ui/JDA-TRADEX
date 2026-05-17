@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JDA TRADEX - Acceso Privado</title>
+    <style>
+        /* Estilos básicos para la interfaz */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; }
+        h2 { color: #1e3a8a; margin-bottom: 20px; }
+        input { width: 90%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
+        button { width: 95%; padding: 12px; background-color: #1e3a8a; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #1d4ed8; }
+        .error-msg { color: #dc2626; font-size: 14px; margin-top: 10px; display: none; }
+        .panel { display: none; width: 100%; max-width: 800px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .logout-btn { background-color: #6b7280; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <!-- 1. FORMULARIO DE INICIO DE SESIÓN -->
+    <div id="login-box" class="container">
+        <h2>🔒 JDA TRADEX</h2>
+        <p>Introduce tus credenciales para acceder</p>
+        <input type="text" id="username" placeholder="👤 Usuario" required>
+        <input type="password" id="password" placeholder="🔑 Contraseña" required>
+        <button onclick="iniciarSesion()">Ingresar 🚀</button>
+        <p id="error-text" class="error-msg">❌ Usuario o contraseña incorrectos</p>
+    </div>
+
+    <!-- 2. PANEL DE CONTROL (Se muestra según el rol) -->
+    <div id="panel-box" class="panel">
+        <h2 id="panel-title">Bienvenido</h2>
+        <div id="panel-content">
+            <!-- Aquí se inyectará el contenido dinámicamente -->
+        </div>
+        <button class="logout-btn" onclick="cerrarSesion()">Cerrar Sesión 🔄</button>
+    </div>
+
+    <script>
+        // BASE DE DATOS DE USUARIOS (Roles: admin, vendedor, cliente)
+        const usuariosPermitidos = [
+            { user: "daniel_admin", pass: "Admin2026*", rol: "admin", nombre: "Daniel (Administrador)" },
+            { user: "vendedor01", pass: "VendJDA123", rol: "vendedor", nombre: "Soporte Ventas" },
+            { user: "cliente_vip", pass: "ClientJDA99", rol: "cliente", nombre: "Cliente VIP" }
+        ];
+
+        function iniciarSesion() {
+            const userIn = document.getElementById("username").value.trim();
+            const passIn = document.getElementById("password").value.trim();
+            const errorText = document.getElementById("error-text");
+
+            // Buscar si el usuario y contraseña coinciden
+            const usuarioEncontrado = usuariosPermitidos.find(u => u.user === userIn && u.pass === passIn);
+
+            if (usuarioEncontrado) {
+                errorText.style.display = "none";
+                mostrarPanel(usuarioEncontrado);
+            } else {
+                errorText.style.display = "block";
+            }
+        }
+
+        function mostrarPanel(usuario) {
+            document.getElementById("login-box").style.display = "none";
+            const panelBox = document.getElementById("panel-box");
+            const panelTitle = document.getElementById("panel-title");
+            const panelContent = document.getElementById("panel-content");
+
+            panelBox.style.display = "block";
+            panelTitle.innerHTML = `👋 ¡Hola, ${usuario.nombre}!`;
+
+            // CONTENIDO VISIBLE SEGÚN EL ROL
+            if (usuario.rol === "admin") {
+                panelContent.innerHTML = `
+                    <h3>📊 Panel de Administración</h3>
+                    <p>Tienes acceso total del sistema.</p>
+                    <ul>
+                        <li>Configuración global de tasas de remesas.</li>
+                        <li>Ver reportes de ganancias y transacciones.</li>
+                        <li>Control de cuentas de vendedores.</li>
+                    </ul>
+                    <!-- Aquí puedes meter tu script completo de administración -->
+                `;
+            } else if (usuario.rol === "vendedor") {
+                panelContent.innerHTML = `
+                    <h3>💼 Panel de Vendedores</h3>
+                    <p>Herramientas autorizadas para atención comercial:</p>
+                    <ul>
+                        <li>Calculadora de remesas operativa.</li>
+                        <li>Registro de nuevos envíos de clientes.</li>
+                    </ul>
+                `;
+            } else if (usuario.rol === "cliente") {
+                panelContent.innerHTML = `
+                    <h3>📈 Calculadora JDA TRADEX</h3>
+                    <p>Bienvenido a tu área de cotización de envíos:</p>
+                    <!-- AQUÍ PEGAS TU CALCULADORA ACTUAL EN HTML -->
+                    <div style="background: #e0f2fe; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <p><strong>[Tu script actual de la calculadora se mostrará aquí]</strong></p>
+                    </div>
+                `;
+            }
+        }
+
+        function cerrarSesion() {
+            document.getElementById("username").value = "";
+            document.getElementById("password").value = "";
+            document.getElementById("panel-box").style.display = "none";
+            document.getElementById("login-box").style.display = "block";
+        }
+    </script>
+</body>
+</html>
