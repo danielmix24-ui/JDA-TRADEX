@@ -1,0 +1,12 @@
+function mostrarPanel(usuario) {
+    // Si el usuario es correcto, lo enviamos a la página de la calculadora/configuración
+    if (usuario.rol === "admin" || usuario.rol === "vendedor" || usuario.rol === "cliente") {
+        
+        // REGLA DE ORO: Guardamos el nombre y rol para que tu otra página sepa quién entró
+        localStorage.setItem("usuario_nombre", usuario.nombre);
+        localStorage.setItem("usuario_rol", usuario.rol);
+        
+        // Redirecciona automáticamente a tu segundo archivo HTML
+        window.location.href = "dashboard.html"; 
+    }
+}
