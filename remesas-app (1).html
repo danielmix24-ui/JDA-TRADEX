@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RemesasVE — Sistema de Gestión</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0e1a; --surface:#111827; --surface2:#1a2235; --border:#1f2d45;
+    --gold:#f5c842; --gold2:#e8a820; --text:#e8edf5; --muted:#6b7a99;
+    --blue:#3b82f6; --teal:#0d9488; --danger:#fc5b5b; --success:#4ade80;
+    --purple:#a78bfa; --orange:#fb923c;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:244px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;}
+  .logo{padding:22px 20px;border-bottom:1px solid var(--border);}
+  .logo h1{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--gold);}
+  .logo span{color:var(--muted);font-size:11px;display:block;margin-top:2px;}
+  .nav{padding:14px 12px;flex:1;overflow-y:auto;}
+  .nav-section{margin-bottom:22px;}
+  .nav-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;padding:0 8px;margin-bottom:6px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13.5px;color:var(--muted);transition:all 0.15s;margin-bottom:2px;}
+  .nav-item:hover{background:var(--surface2);color:var(--text);}
+  .nav-item.active{background:rgba(245,200,66,0.1);color:var(--gold);font-weight:500;}
+  .nav-item .icon{width:16px;text-align:center;font-size:15px;}
+  .sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);}
+  .rates-mini{display:grid;gap:5px;margin-bottom:10px;}
+  .rate-row{background:rgba(245,200,66,0.07);border:1px solid rgba(245,200,66,0.18);border-radius:7px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;}
+  .rate-row .rl{font-size:10px;color:var(--muted);}
+  .rate-row .rv{font-size:13px;font-weight:700;font-family:'Syne',sans-serif;color:var(--gold);}
+  #moneda-banner{display:none;padding:7px 20px;background:rgba(167,139,250,0.1);border-bottom:1px solid rgba(167,139,250,0.25);font-size:12px;color:var(--purple);position:fixed;top:0;left:244px;right:0;z-index:90;align-items:center;gap:8px;}
+  #moneda-banner.show{display:flex;}
+  .main{margin-left:244px;padding:26px 30px;min-height:100vh;}
+  .page{display:none;}.page.active{display:block;}
+  .page-header{margin-bottom:24px;}
+  .page-header h2{font-family:'Syne',sans-serif;font-size:25px;font-weight:700;}
+  .page-header p{color:var(--muted);font-size:13px;margin-top:4px;}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden;}
+  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ac,var(--gold));}
+  .stat-card .si{font-size:22px;margin-bottom:8px;}
+  .stat-card .sv{font-size:24px;font-weight:700;font-family:'Syne',sans-serif;}
+  .stat-card .sl{font-size:12px;color:var(--muted);margin-top:2px;}
+  .stat-card .sd{font-size:11px;margin-top:7px;}
+  .stat-card.g{--ac:var(--success);}.stat-card.gd{--ac:var(--gold);}.stat-card.b{--ac:var(--blue);}.stat-card.t{--ac:var(--teal);}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:18px;}
+  .card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .card-header h3{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;}
+  .card-body{padding:18px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;padding:9px 13px;color:var(--muted);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:0.7px;border-bottom:1px solid var(--border);}
+  td{padding:11px 13px;border-bottom:1px solid rgba(31,45,69,0.5);vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:rgba(255,255,255,0.02);}
+  .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;}
+  .bg{background:rgba(74,222,128,0.12);color:var(--success);}
+  .by{background:rgba(245,200,66,0.12);color:var(--gold);}
+  .br{background:rgba(252,91,91,0.12);color:var(--danger);}
+  .bb{background:rgba(59,130,246,0.12);color:var(--blue);}
+  .bgr{background:rgba(107,122,153,0.15);color:var(--muted);}
+  .bp{background:rgba(167,139,250,0.12);color:var(--purple);}
+  .bo{background:rgba(251,146,60,0.12);color:var(--orange);}
+  .btn{padding:8px 15px;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-p{background:var(--gold);color:#0a0e1a;}.btn-p:hover{background:var(--gold2);}
+  .btn-g{background:transparent;color:var(--muted);border:1px solid var(--border);}.btn-g:hover{border-color:var(--gold);color:var(--gold);}
+  .btn-d{background:rgba(252,91,91,0.1);color:var(--danger);border:1px solid rgba(252,91,91,0.2);}.btn-d:hover{background:rgba(252,91,91,0.2);}
+  .btn-s{background:rgba(74,222,128,0.1);color:var(--success);border:1px solid rgba(74,222,128,0.2);}
+  .btn-sm{padding:5px 10px;font-size:12px;}
+  .form-grid{display:grid;gap:14px;}.fg2{grid-template-columns:1fr 1fr;}.fg3{grid-template-columns:1fr 1fr 1fr;}
+  .field label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px;}
+  .field input,.field select,.field textarea{width:100%;padding:9px 11px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color 0.15s;}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold);}
+  .field select option{background:var(--surface2);}
+  .field input[readonly]{background:rgba(245,200,66,0.05);border-color:rgba(245,200,66,0.2);color:var(--gold);font-weight:700;font-size:15px;}
+  .monto-wrap{position:relative;}
+  .monto-prefix{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--gold);font-weight:700;font-size:14px;pointer-events:none;}
+  .monto-wrap input{padding-left:26px;}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px;width:600px;max-width:96vw;max-height:92vh;overflow-y:auto;}
+  .modal h3{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:18px;}
+  .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+  .search-box{position:relative;width:270px;}
+  .search-box input{width:100%;padding:8px 12px 8px 34px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;font-family:'DM Sans',sans-serif;}
+  .search-box input:focus{border-color:var(--gold);}
+  .search-box::before{content:'🔍';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;}
+  .chart-bars{display:flex;align-items:flex-end;gap:6px;height:130px;}
+  .chart-bar-group{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .chart-bar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--gold) 0%,rgba(245,200,66,0.25) 100%);transition:height 0.5s;}
+  .chart-bar.blue{background:linear-gradient(180deg,var(--blue) 0%,rgba(59,130,246,0.25) 100%);}
+  .caja-display{background:linear-gradient(135deg,rgba(245,200,66,0.08),rgba(245,200,66,0.02));border:1px solid rgba(245,200,66,0.2);border-radius:14px;padding:24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;}
+  .caja-main .label{font-size:12px;color:var(--muted);margin-bottom:4px;}
+  .caja-main .amount{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--gold);}
+  .caja-main .sub{font-size:12px;color:var(--muted);margin-top:4px;}
+  .caja-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+  .caja-mini{background:var(--surface2);border-radius:10px;padding:13px;border:1px solid var(--border);}
+  .caja-mini .label{font-size:11px;color:var(--muted);}
+  .caja-mini .val{font-size:19px;font-weight:700;font-family:'Syne',sans-serif;margin-top:4px;}
+  .val.pos{color:var(--success);}.val.neg{color:var(--danger);}
+  .credito-bar{height:6px;background:var(--surface2);border-radius:4px;margin-top:5px;overflow:hidden;}
+  .credito-fill{height:100%;border-radius:4px;background:var(--gold);}
+  #notif{position:fixed;top:18px;right:18px;z-index:999;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px 17px;font-size:13px;box-shadow:0 8px 32px rgba(0,0,0,0.4);transform:translateX(140%);transition:transform 0.3s ease;display:flex;align-items:center;gap:10px;min-width:250px;}
+  #notif.show{transform:translateX(0);}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .pill{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;background:var(--surface2);color:var(--muted);}
+  .avatar{width:30px;height:30px;border-radius:50%;background:var(--gold);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0a0e1a;flex-shrink:0;}
+  .flex{display:flex;}.flex-c{display:flex;align-items:center;}.gap-8{gap:8px;}
+  .tm{color:var(--muted);font-size:12px;}
+  .alert{padding:11px 15px;border-radius:8px;font-size:13px;margin-bottom:11px;display:flex;align-items:center;gap:9px;}
+  .alert-s{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);color:var(--success);}
+  .tasa-hint{font-size:10px;color:var(--muted);margin-top:4px;padding:4px 8px;background:rgba(245,200,66,0.05);border-radius:5px;border-left:2px solid var(--gold);}
+  .tasa-info-box{background:var(--surface2);border-radius:8px;padding:11px 13px;margin-top:10px;font-size:12px;color:var(--muted);border-left:3px solid var(--gold);}
+  .tasa-info-box strong{color:var(--gold);}
+  .rates-cfg-table{width:100%;border-collapse:collapse;}
+  .rates-cfg-table td{padding:9px 6px;vertical-align:middle;border-bottom:1px solid var(--border);}
+  .rates-cfg-table tr:last-child td{border-bottom:none;}
+  .rates-cfg-table .pair-name{font-weight:600;font-size:13px;}
+  .rates-cfg-table input{padding:7px 10px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;width:130px;outline:none;}
+  .rates-cfg-table input:focus{border-color:var(--gold);}
+  .pair-tag{display:inline-block;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;background:rgba(245,200,66,0.12);color:var(--gold);}
+  hr.sep{border:none;border-top:1px solid var(--border);margin:14px 0;}
+  @media(max-width:900px){
+    .sidebar{width:58px;}.nav-item span,.logo h1,.logo span,.nav-label,.sidebar-footer{display:none;}
+    .main{margin-left:58px;padding:14px;}#moneda-banner{left:58px;}
+    .stats-grid{grid-template-columns:repeat(2,1fr);}.two-col{grid-template-columns:1fr;}
+    .fg2,.fg3{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div id="moneda-banner">
+  <span>💜</span><span id="moneda-banner-txt"></span>
+</div>
+
+<nav class="sidebar">
+  <div class="logo">
+    <h1>💸 RemesasVE</h1>
+    <span>Sistema de Gestión</span>
+  </div>
+  <div class="nav">
+    <div class="nav-section">
+      <div class="nav-label">Principal</div>
+      <div class="nav-item active" onclick="goto('dashboard')"><span class="icon">📊</span><span>Dashboard</span></div>
+      <div class="nav-item" onclick="goto('remesas')"><span class="icon">💸</span><span>Remesas</span></div>
+      <div class="nav-item" onclick="goto('clientes')"><span class="icon">👥</span><span>Clientes</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Finanzas</div>
+      <div class="nav-item" onclick="goto('caja')"><span class="icon">🗄️</span><span>Arqueo de Caja</span></div>
+      <div class="nav-item" onclick="goto('creditos')"><span class="icon">💳</span><span>Créditos</span></div>
+      <div class="nav-item" onclick="goto('bancos')"><span class="icon">🏦</span><span>Bancos</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Sistema</div>
+      <div class="nav-item" onclick="goto('reportes')"><span class="icon">📋</span><span>Reportes</span></div>
+      <div class="nav-item" onclick="goto('config')"><span class="icon">⚙️</span><span>Configuración</span></div>
+    </div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="rates-mini" id="sidebar-rates"></div>
+    <small>v2.0 · USA &amp; Europa → VE</small>
+  </div>
+</nav>
+
+<main class="main" id="main-content">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-header"><h2>Dashboard</h2><p>Resumen general · <span id="today-date"></span></p></div>
+    <div class="stats-grid">
+      <div class="stat-card gd"><div class="si">💸</div><div class="sv" id="stat-total-mes">$0</div><div class="sl">Remesas este mes</div><div class="sd" style="color:var(--success)">▲ 12% vs mes anterior</div></div>
+      <div class="stat-card g"><div class="si">✅</div><div class="sv" id="stat-completadas">0</div><div class="sl">Completadas</div><div class="sd" style="color:var(--muted)" id="stat-pendientes">0 pendientes</div></div>
+      <div class="stat-card b"><div class="si">👥</div><div class="sv" id="stat-clientes">0</div><div class="sl">Clientes activos</div><div class="sd" style="color:var(--success)">▲ 3 nuevos</div></div>
+      <div class="stat-card t"><div class="si">🏦</div><div class="sv" id="stat-caja">Bs. 0</div><div class="sl">Saldo en caja</div></div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header"><h3>📈 Remesas por Mes</h3><span class="badge by">2025</span></div>
+        <div class="card-body"><div style="padding:10px 0"><div class="chart-bars" id="chart-bars"></div><div style="display:flex;gap:6px;margin-top:7px;" id="chart-labels"></div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>🕐 Últimas Remesas</h3><button class="btn btn-g btn-sm" onclick="goto('remesas')">Ver todas</button></div>
+        <div class="card-body" style="padding:0"><table><thead><tr><th>Cliente</th><th>Monto</th><th>Estado</th></tr></thead><tbody id="last-remesas"></tbody></table></div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header"><h3>⚠️ Créditos Vigentes</h3><button class="btn btn-g btn-sm" onclick="goto('creditos')">Ver todos</button></div>
+        <div class="card-body" style="padding:0"><table><thead><tr><th>Cliente</th><th>Pendiente</th><th>Vence</th></tr></thead><tbody id="dashboard-creditos"></tbody></table></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>🏦 Saldos Bancarios</h3></div>
+        <div class="card-body" style="padding:0"><table><thead><tr><th>Banco</th><th>Moneda</th><th>Saldo</th></tr></thead><tbody id="dashboard-bancos"></tbody></table></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REMESAS -->
+  <div class="page" id="page-remesas">
+    <div class="page-header"><h2>💸 Remesas</h2><p>Envíos USA &amp; Europa → Venezuela</p></div>
+    <div class="topbar">
+      <div class="search-box"><input id="search-remesa" oninput="filtrarRemesas()" placeholder="Buscar cliente, ID..."></div>
+      <div class="flex gap-8">
+        <select class="btn btn-g" id="filter-status" onchange="filtrarRemesas()">
+          <option value="">Todos los estados</option><option>Completada</option><option>Pendiente</option><option>En proceso</option><option>Cancelada</option>
+        </select>
+        <button class="btn btn-p" onclick="abrirModalRemesa()">+ Nueva Remesa</button>
+      </div>
+    </div>
+    <div class="card"><div class="card-body" style="padding:0">
+      <table><thead><tr><th>ID</th><th>Cliente</th><th>Origen</th><th>Moneda</th><th>Monto</th><th>Tasa</th><th>Bs. Entregados</th><th>Fecha</th><th>Estado</th><th></th></tr></thead>
+      <tbody id="remesas-tbody"></tbody></table>
+    </div></div>
+  </div>
+
+  <!-- CLIENTES -->
+  <div class="page" id="page-clientes">
+    <div class="page-header"><h2>👥 Clientes</h2><p>Base de clientes registrados</p></div>
+    <div class="topbar">
+      <div class="search-box"><input id="search-cliente" oninput="filtrarClientes()" placeholder="Buscar nombre, teléfono..."></div>
+      <button class="btn btn-p" onclick="openModal('modal-cliente')">+ Nuevo Cliente</button>
+    </div>
+    <div class="card"><div class="card-body" style="padding:0">
+      <table><thead><tr><th>Cliente</th><th>País</th><th>Teléfono</th><th>Total Enviado</th><th>Remesas</th><th>Estado</th><th></th></tr></thead>
+      <tbody id="clientes-tbody"></tbody></table>
+    </div></div>
+  </div>
+
+  <!-- CAJA -->
+  <div class="page" id="page-caja">
+    <div class="page-header"><h2>🗄️ Arqueo de Caja</h2><p>Control de efectivo y cuadre diario</p></div>
+    <div class="caja-display">
+      <div class="caja-main">
+        <div class="label">💰 Saldo Total en Caja</div>
+        <div class="amount" id="caja-saldo-total">Bs. 0</div>
+        <div class="sub">Última actualización: <span id="caja-ultima"></span></div>
+      </div>
+      <div class="flex gap-8">
+        <button class="btn btn-s" onclick="openMovTipo('ingreso')">+ Ingreso</button>
+        <button class="btn btn-d" onclick="openMovTipo('egreso')">− Egreso</button>
+        <button class="btn btn-p" onclick="arqCaja()">📄 Arquear</button>
+      </div>
+    </div>
+    <div class="caja-grid">
+      <div class="caja-mini"><div class="label">📥 Ingresos Hoy</div><div class="val pos" id="caja-ing-hoy">Bs. 0</div></div>
+      <div class="caja-mini"><div class="label">📤 Egresos Hoy</div><div class="val neg" id="caja-eg-hoy">Bs. 0</div></div>
+      <div class="caja-mini"><div class="label">📊 Balance Neto Hoy</div><div class="val pos" id="caja-balance-hoy">Bs. 0</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3>📋 Movimientos de Caja</h3>
+        <select class="btn btn-g btn-sm" id="filter-caja" onchange="renderCaja()">
+          <option value="todos">Todos</option><option value="ingreso">Ingresos</option><option value="egreso">Egresos</option>
+        </select>
+      </div>
+      <div class="card-body" style="padding:0">
+        <table><thead><tr><th>Fecha</th><th>Descripción</th><th>Categoría</th><th>Tipo</th><th>Monto Bs.</th><th>Equiv. $</th><th>Responsable</th></tr></thead>
+        <tbody id="caja-tbody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- CRÉDITOS -->
+  <div class="page" id="page-creditos">
+    <div class="page-header"><h2>💳 Créditos</h2><p>Créditos otorgados a clientes</p></div>
+    <div class="topbar"><div></div><button class="btn btn-p" onclick="openModal('modal-credito')">+ Nuevo Crédito</button></div>
+    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat-card gd"><div class="si">💳</div><div class="sv" id="credito-total-otorgado">$0</div><div class="sl">Total otorgado</div></div>
+      <div class="stat-card b"><div class="si">⏳</div><div class="sv" id="credito-pendiente">$0</div><div class="sl">Por cobrar</div></div>
+      <div class="stat-card g"><div class="si">✅</div><div class="sv" id="credito-cobrado">$0</div><div class="sl">Cobrado</div></div>
+    </div>
+    <div class="card"><div class="card-body" style="padding:0">
+      <table><thead><tr><th>Cliente</th><th>Monto $</th><th>Monto Bs.</th><th>Pagado</th><th>Pendiente</th><th>Vencimiento</th><th>Estado</th><th></th></tr></thead>
+      <tbody id="creditos-tbody"></tbody></table>
+    </div></div>
+  </div>
+
+  <!-- BANCOS -->
+  <div class="page" id="page-bancos">
+    <div class="page-header"><h2>🏦 Cuentas Bancarias</h2><p>Saldos y movimientos</p></div>
+    <div class="topbar"><div></div>
+      <div class="flex gap-8">
+        <button class="btn btn-p" onclick="openModal('modal-banco')">+ Nueva Cuenta</button>
+        <button class="btn btn-g" onclick="openModal('modal-transferencia')">🔄 Transferir</button>
+      </div>
+    </div>
+    <div id="bancos-cards" class="caja-grid" style="grid-template-columns:repeat(4,1fr)"></div>
+    <div class="card"><div class="card-header"><h3>📋 Movimientos Bancarios</h3></div>
+      <div class="card-body" style="padding:0">
+        <table><thead><tr><th>Fecha</th><th>Banco</th><th>Descripción</th><th>Tipo</th><th>Monto</th></tr></thead>
+        <tbody id="bancos-mov-tbody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPORTES -->
+  <div class="page" id="page-reportes">
+    <div class="page-header"><h2>📋 Reportes</h2><p>Generación de informes</p></div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header"><h3>📊 Generar Reporte</h3></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="field"><label>Período</label><select id="rep-periodo"><option>Este mes</option><option>Mes anterior</option><option>Trimestre</option><option>Año</option></select></div>
+            <div class="field"><label>Origen</label><select id="rep-tipo"><option>Todos</option><option>USA</option><option>Europa</option></select></div>
+          </div>
+          <button class="btn btn-p" style="margin-top:14px" onclick="generarReporte()">📄 Generar</button>
+          <div id="reporte-resultado" style="margin-top:14px"></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-header"><h3>📈 Estadísticas Rápidas</h3></div><div class="card-body"><div id="stats-rapidas"></div></div></div>
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <div class="page" id="page-config">
+    <div class="page-header"><h2>⚙️ Configuración</h2><p>Tasas de cambio, empresa y preferencias del sistema</p></div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header"><h3>💱 Tasas de Cambio</h3><span class="badge by">Todos los pares</span></div>
+        <div class="card-body">
+          <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Configure las tasas de conversión. Se aplican automáticamente al seleccionar el par en una remesa.</p>
+          <table class="rates-cfg-table" id="rates-config-table"></table>
+          <hr class="sep">
+          <div class="field"><label>Comisión por Remesa (%)</label><input type="number" id="comision-pct" step="0.1" min="0" max="20" style="width:150px;"></div>
+          <button class="btn btn-p" style="margin-top:14px" onclick="guardarTasas()">💾 Guardar Tasas</button>
+        </div>
+      </div>
+      <div style="display:grid;gap:18px;">
+        <div class="card">
+          <div class="card-header"><h3>🏢 Datos de la Empresa</h3></div>
+          <div class="card-body">
+            <div class="form-grid fg2">
+              <div class="field"><label>Nombre Empresa</label><input type="text" id="cfg-nombre"></div>
+              <div class="field"><label>Responsable</label><input type="text" id="cfg-resp"></div>
+            </div>
+            <button class="btn btn-p" style="margin-top:14px" onclick="guardarEmpresa()">💾 Guardar</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>🌐 Moneda Principal</h3></div>
+          <div class="card-body">
+            <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Define la moneda por defecto al crear remesas y cómo se muestran los totales.</p>
+            <div class="field">
+              <label>Seleccionar Moneda Principal</label>
+              <select id="cfg-moneda-principal" onchange="cambiarMonedaPrincipal()">
+                <option value="USD">🇺🇸 USD — Dólar Estadounidense</option>
+                <option value="EUR">🇪🇺 EUR — Euro</option>
+                <option value="USDT">🔷 USDT — Tether (Cripto)</option>
+                <option value="GBP">🇬🇧 GBP — Libra Esterlina</option>
+              </select>
+            </div>
+            <div class="tasa-info-box" id="moneda-info-box" style="margin-top:12px;"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>💾 Datos del Sistema</h3></div>
+          <div class="card-body">
+            <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Datos guardados en LocalStorage del navegador. Persisten entre sesiones.</p>
+            <div class="flex gap-8">
+              <button class="btn btn-g btn-sm" onclick="exportarDatos()">📤 Exportar JSON</button>
+              <button class="btn btn-d btn-sm" onclick="resetearDatos()">🗑️ Borrar todo</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- MODALES -->
+
+<!-- Nueva Remesa -->
+<div class="modal-overlay" id="modal-remesa">
+  <div class="modal">
+    <h3>💸 Nueva Remesa</h3>
+    <div class="form-grid fg2">
+      <div class="field"><label>Cliente</label><select id="rm-cliente"><option value="">Seleccionar...</option></select></div>
+      <div class="field"><label>País Origen</label>
+        <select id="rm-origen" onchange="onOrigenChange()">
+          <option value="USA">🇺🇸 USA</option>
+          <option value="España">🇪🇸 España</option>
+          <option value="Italia">🇮🇹 Italia</option>
+          <option value="Portugal">🇵🇹 Portugal</option>
+          <option value="Francia">🇫🇷 Francia</option>
+          <option value="Otro (Europa)">🌍 Otro (Europa)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label id="rm-monto-label">Monto Enviado</label>
+        <div class="monto-wrap">
+          <span class="monto-prefix" id="rm-sym">$</span>
+          <input type="number" id="rm-monto" placeholder="0.00" oninput="calcRemesa()">
+        </div>
+      </div>
+      <div class="field"><label>Par de Cambio</label>
+        <select id="rm-par" onchange="onParChange()"></select>
+      </div>
+      <div class="field">
+        <label id="rm-tasa-label">Tasa Aplicada</label>
+        <input type="number" id="rm-tasa" step="0.01" oninput="calcRemesa()">
+        <div class="tasa-hint" id="rm-tasa-hint"></div>
+      </div>
+      <div class="field"><label id="rm-comision-label">Comisión</label><input type="number" id="rm-comision" placeholder="0.00" oninput="calcRemesa()"></div>
+      <div class="field"><label>Bs. a Entregar</label><input type="number" id="rm-bs" placeholder="— auto —" readonly></div>
+      <div class="field"><label>Método de Pago</label>
+        <select id="rm-metodo"><option>Zelle</option><option>Transferencia</option><option>PayPal</option><option>Efectivo</option><option>USDT</option><option>Bizum</option><option>Revolut</option></select>
+      </div>
+      <div class="field"><label>Beneficiario VE</label><input type="text" id="rm-beneficiario" placeholder="Nombre destinatario"></div>
+      <div class="field"><label>Banco Destino VE</label>
+        <select id="rm-banco-ve"><option>Banesco</option><option>Mercantil</option><option>Venezuela</option><option>Bicentenario</option><option>BNC</option><option>Bancamiga</option><option>Otro</option></select>
+      </div>
+      <div class="field"><label>Estado</label>
+        <select id="rm-estado"><option>Pendiente</option><option>En proceso</option><option>Completada</option></select>
+      </div>
+    </div>
+    <div class="field" style="margin-top:12px"><label>Notas</label><textarea id="rm-notas" rows="2" placeholder="Observaciones..."></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-g" onclick="closeModal('modal-remesa')">Cancelar</button>
+      <button class="btn btn-p" onclick="guardarRemesa()">✅ Guardar Remesa</button>
+    </div>
+  </div>
+</div>
+
+<!-- Nuevo Cliente -->
+<div class="modal-overlay" id="modal-cliente">
+  <div class="modal">
+    <h3>👤 Nuevo Cliente</h3>
+    <div class="form-grid fg2">
+      <div class="field"><label>Nombre</label><input type="text" id="cl-nombre" placeholder="Nombre completo"></div>
+      <div class="field"><label>Apellido</label><input type="text" id="cl-apellido"></div>
+      <div class="field"><label>País Origen</label>
+        <select id="cl-pais"><option>USA</option><option>España</option><option>Italia</option><option>Portugal</option><option>Francia</option><option>Otro (Europa)</option></select>
+      </div>
+      <div class="field"><label>Teléfono</label><input type="text" id="cl-telefono" placeholder="+1 ..."></div>
+      <div class="field"><label>Email</label><input type="email" id="cl-email"></div>
+      <div class="field"><label>Documento</label><input type="text" id="cl-doc" placeholder="Pasaporte / ID"></div>
+    </div>
+    <div class="field" style="margin-top:12px"><label>Notas</label><textarea id="cl-notas" rows="2"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-g" onclick="closeModal('modal-cliente')">Cancelar</button>
+      <button class="btn btn-p" onclick="guardarCliente()">✅ Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Movimiento Caja -->
+<div class="modal-overlay" id="modal-movimiento">
+  <div class="modal">
+    <h3 id="mov-title">📥 Registro de Movimiento</h3>
+    <div class="form-grid fg2">
+      <div class="field"><label>Tipo</label>
+        <select id="mov-tipo"><option value="ingreso">📥 Ingreso</option><option value="egreso">📤 Egreso</option></select>
+      </div>
+      <div class="field"><label>Descripción</label><input type="text" id="mov-desc" placeholder="Descripción"></div>
+      <div class="field"><label>Monto Bs.</label><input type="number" id="mov-monto-bs" placeholder="0.00"></div>
+      <div class="field"><label>Equiv. $ (opcional)</label><input type="number" id="mov-monto-usd" placeholder="0.00"></div>
+      <div class="field"><label>Responsable</label><input type="text" id="mov-resp" placeholder="Nombre"></div>
+      <div class="field"><label>Categoría</label>
+        <select id="mov-cat"><option>Remesa recibida</option><option>Remesa enviada</option><option>Comisión</option><option>Gasto operativo</option><option>Nómina</option><option>Servicios</option><option>Cobro crédito</option><option>Otro</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-g" onclick="closeModal('modal-movimiento')">Cancelar</button>
+      <button class="btn btn-p" onclick="guardarMovimiento()">✅ Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Crédito -->
+<div class="modal-overlay" id="modal-credito">
+  <div class="modal">
+    <h3>💳 Nuevo Crédito</h3>
+    <div class="form-grid fg2">
+      <div class="field"><label>Cliente</label><select id="cr-cliente"></select></div>
+      <div class="field"><label>Monto USD</label><input type="number" id="cr-monto" placeholder="0.00"></div>
+      <div class="field"><label>Fecha Vencimiento</label><input type="date" id="cr-vence"></div>
+      <div class="field"><label>Interés % (opc.)</label><input type="number" id="cr-interes" placeholder="0"></div>
+    </div>
+    <div class="field" style="margin-top:12px"><label>Descripción</label><textarea id="cr-desc" rows="2" placeholder="Motivo del crédito..."></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-g" onclick="closeModal('modal-credito')">Cancelar</button>
+      <button class="btn btn-p" onclick="guardarCredito()">✅ Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Banco -->
+<div class="modal-overlay" id="modal-banco">
+  <div class="modal">
+    <h3>🏦 Nueva Cuenta Bancaria</h3>
+    <div class="form-grid fg2">
+      <div class="field"><label>Banco</label><input type="text" id="bk-banco" placeholder="Nombre del banco"></div>
+      <div class="field"><label>Titular</label><input type="text" id="bk-titular"></div>
+      <div class="field"><label>Nro. Cuenta</label><input type="text" id="bk-numero"></div>
+      <div class="field"><label>Moneda</label>
+        <select id="bk-moneda"><option>USD</option><option>EUR</option><option>Bs.</option><option>USDT</option><option>GBP</option></select>
+      </div>
+      <div class="field"><label>Saldo Inicial</label><input type="number" id="bk-saldo" placeholder="0.00"></div>
+      <div class="field"><label>País</label>
+        <select id="bk-pais"><option>USA</option><option>España</option><option>Italia</option><option>Portugal</option><option>Francia</option><option>Venezuela</option><option>Otro</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-g" onclick="closeModal('modal-banco')">Cancelar</button>
+      <button class="btn btn-p" onclick="guardarBanco()">✅ Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Transferencia -->
+<div class="modal-overlay" id="modal-transferencia">
+  <div class="modal">
+    <h3>🔄 Transferencia entre Cuentas</h3>
+    <div class="form-grid fg2">
+      <div class="field"><label>Cuenta Origen</label><select id="tr-origen"></select></div>
+      <div class="field"><label>Cuenta Destino</label><select id="tr-destino"></select></div>
+      <div class="field"><label>Monto</label><input type="number" id="tr-monto" placeholder="0.00"></div>
+      <div class="field"><label>Descripción</label><input type="text" id="tr-desc" placeholder="Motivo"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-g" onclick="closeModal('modal-transferencia')">Cancelar</button>
+      <button class="btn btn-p" onclick="guardarTransferencia()">✅ Transferir</button>
+    </div>
+  </div>
+</div>
+
+<div id="notif"></div>
+
+<script>
+// ====================================================
+// PARES DE CAMBIO DISPONIBLES
+// ====================================================
+const PARES = [
+  { id:'usd_bs',   de:'USD',  a:'Bs.',  label:'USD → Bs.',   emoji:'🇺🇸', def:89.50,  step:0.01   },
+  { id:'eur_bs',   de:'EUR',  a:'Bs.',  label:'EUR → Bs.',   emoji:'🇪🇺', def:97.20,  step:0.01   },
+  { id:'usdt_bs',  de:'USDT', a:'Bs.',  label:'USDT → Bs.',  emoji:'🔷', def:89.10,  step:0.01   },
+  { id:'gbp_bs',   de:'GBP',  a:'Bs.',  label:'GBP → Bs.',   emoji:'🇬🇧', def:113.40, step:0.01   },
+  { id:'eur_usd',  de:'EUR',  a:'USD',  label:'EUR → USD',   emoji:'💱', def:1.085,  step:0.0001 },
+  { id:'gbp_usd',  de:'GBP',  a:'USD',  label:'GBP → USD',   emoji:'💷', def:1.265,  step:0.0001 },
+  { id:'usdt_usd', de:'USDT', a:'USD',  label:'USDT → USD',  emoji:'🔁', def:1.000,  step:0.0001 },
+  { id:'cop_bs',   de:'COP',  a:'Bs.',  label:'COP → Bs.',   emoji:'🇨🇴', def:0.022,  step:0.0001 },
+  { id:'mxn_bs',   de:'MXN',  a:'Bs.',  label:'MXN → Bs.',   emoji:'🇲🇽', def:5.10,   step:0.01   },
+];
+
+const MONEDAS_EUROPA = {España:'EUR',Italia:'EUR',Portugal:'EUR',Francia:'EUR','Otro (Europa)':'EUR'};
+const SIM = {USD:'$',EUR:'€',GBP:'£',USDT:'₮',COP:'$',MXN:'$','Bs.':'Bs.'};
+
+// ====================================================
+// STATE + LOCALSTORAGE
+// ====================================================
+const LS_KEY = 'remesasve_v2';
+
+let S = {
+  tasas: {}, comision_pct: 3.5,
+  moneda_principal: 'USD',
+  empresa_nombre: 'RemesasVE', empresa_resp: 'Administrador',
+  clientes: [], remesas: [], movimientos: [], creditos: [],
+  bancos: [], bancos_mov: []
+};
+
+function save() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch(e) {} }
+function load() {
+  try {
+    let raw = localStorage.getItem(LS_KEY);
+    if (raw) { S = Object.assign(S, JSON.parse(raw)); return true; }
+  } catch(e) {}
+  return false;
+}
+
+// ====================================================
+// HELPERS
+// ====================================================
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function rndF(a,b){return +(Math.random()*(b-a)+a).toFixed(2);}
+function rndDate(n=90){let d=new Date();d.setDate(d.getDate()-rnd(0,n));return d.toISOString().split('T')[0];}
+function fmt(s){if(!s)return'';let[y,m,d]=s.split('-');return`${d}/${m}/${y}`;}
+function num(n,d=2){return (+n||0).toLocaleString('es',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function getTasa(id){return S.tasas[id]??(PARES.find(p=>p.id===id)?.def??1);}
+function sym(m){return SIM[m]||'$';}
+
+// ====================================================
+// SEED
+// ====================================================
+const NOM=['Carlos','María','José','Ana','Pedro','Laura','Luis','Gloria','Rafael','Claudia','Héctor','Valentina','Andrés','Sofía','Roberto','Diana','Miguel','Elena','Fernando','Patricia','Alejandro','Carmen','Julio','Natalia','Eduardo','Isabella','Sergio','Gabriela','Juan','Verónica','Antonio','Marcela','David','Adriana','Ricardo','Paola','Óscar','Liliana','Ernesto','Cecilia','Pablo','Cristina','Ramón','Lorena','Felipe','Mónica','Javier','Beatriz','Hugo','Sandra'];
+const APE=['Rodríguez','García','Martínez','López','González','Pérez','Sánchez','Ramírez','Torres','Flores','Rivera','Díaz','Hernández','Vargas','Castillo','Jiménez','Mora','Ramos','Cruz','Reyes'];
+const PAISES=['USA','USA','USA','España','Italia','Portugal','USA','España','USA','España'];
+const BVES=['Banesco','Mercantil','Venezuela','BNC','Bancamiga','Bicentenario'];
+const METS=['Zelle','Transferencia','PayPal','Efectivo','USDT'];
+const ESTS=['Completada','Completada','Completada','Completada','En proceso','Pendiente','Cancelada'];
+
+function seed(){
+  PARES.forEach(p=>{S.tasas[p.id]=p.def;});
+  for(let i=0;i<50;i++){
+    let n=NOM[i],ap=APE[rnd(0,APE.length-1)],pais=PAISES[rnd(0,PAISES.length-1)];
+    S.clientes.push({id:i+1,nombre:n,apellido:ap,pais,telefono:`+${pais==='USA'?'1':'34'} ${rnd(200,999)}-${rnd(1000,9999)}`,email:`${n.toLowerCase()}.${ap.toLowerCase()}@email.com`,doc:`${pais==='USA'?'SSN':'ID'}-${rnd(10000,99999)}`,activo:true,notas:''});
+  }
+  for(let i=0;i<51;i++){
+    let cl=S.clientes[rnd(0,49)];
+    let moneda=MONEDAS_EUROPA[cl.pais]||'USD';
+    let parId=moneda==='EUR'?'eur_bs':'usd_bs';
+    let tasa=getTasa(parId);
+    let monto=rndF(100,2500);
+    let com=+(monto*S.comision_pct/100).toFixed(2);
+    let bs=+((monto-com)*tasa).toFixed(2);
+    S.remesas.push({id:`REM-${String(i+1).padStart(4,'0')}`,cliente_id:cl.id,cliente_nombre:`${cl.nombre} ${cl.apellido}`,origen:cl.pais,moneda,par_id:parId,monto,comision:com,tasa,bs,beneficiario:`${NOM[rnd(0,49)]} ${APE[rnd(0,19)]}`,banco_ve:BVES[rnd(0,5)],metodo:METS[rnd(0,4)],estado:ESTS[rnd(0,ESTS.length-1)],fecha:rndDate(60),notas:''});
+  }
+  const DESCS=['Ingreso por remesa','Pago comisión','Gasto alquiler','Retiro operativo','Nómina','Cobro crédito','Papelería'];
+  for(let i=0;i<20;i++){
+    let tipo=rnd(0,3)>0?'ingreso':'egreso';
+    let mbs=rndF(500,14000);
+    S.movimientos.push({id:i+1,fecha:rndDate(30),desc:DESCS[rnd(0,DESCS.length-1)],tipo,monto_bs:mbs,monto_usd:+(mbs/getTasa('usd_bs')).toFixed(2),responsable:'Administrador',cat:tipo==='ingreso'?'Remesa recibida':'Gasto operativo'});
+  }
+  S.clientes.slice(0,8).forEach((cl,i)=>{
+    let monto=rndF(200,1400);
+    let pagado=i%3===0?monto:rndF(0,monto*0.8);
+    let vence=new Date();vence.setDate(vence.getDate()+rnd(-10,60));
+    S.creditos.push({id:i+1,cliente_id:cl.id,cliente_nombre:`${cl.nombre} ${cl.apellido}`,monto,pagado:+pagado.toFixed(2),monto_bs:+(monto*getTasa('usd_bs')).toFixed(2),vencimiento:vence.toISOString().split('T')[0],interes:0,desc:'Anticipo de remesa',estado:+pagado>=monto?'Pagado':new Date()>vence?'Vencido':'Activo'});
+  });
+  S.bancos=[
+    {id:1,banco:'Chase Bank',titular:'RemesasVE LLC',numero:'****4521',moneda:'USD',saldo:12450.80,pais:'USA'},
+    {id:2,banco:'Bank of America',titular:'RemesasVE LLC',numero:'****7893',moneda:'USD',saldo:8320.50,pais:'USA'},
+    {id:3,banco:'BBVA España',titular:'RemesasVE EU',numero:'****2211',moneda:'EUR',saldo:5780.00,pais:'España'},
+    {id:4,banco:'Banesco VE',titular:'RemesasVE',numero:'****0142',moneda:'Bs.',saldo:47820.00,pais:'Venezuela'},
+  ];
+  for(let i=0;i<12;i++){
+    let bk=S.bancos[rnd(0,3)];
+    S.bancos_mov.push({fecha:rndDate(30),banco:bk.banco,moneda:bk.moneda,desc:['Recepción Zelle','Pago proveedor','Comisión banco','Ingreso remesa'][rnd(0,3)],tipo:rnd(0,1)?'Crédito':'Débito',monto:rndF(100,3000)});
+  }
+  save();
+}
+
+// ====================================================
+// NAV
+// ====================================================
+function goto(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(x=>{if((x.getAttribute('onclick')||'').includes(p))x.classList.add('active');});
+  ({dashboard:renderDashboard,remesas:renderRemesas,clientes:renderClientes,caja:renderCaja,creditos:renderCreditos,bancos:renderBancos,reportes:renderReportes,config:renderConfig})[p]?.();
+}
+
+// ====================================================
+// MODALES
+// ====================================================
+function openModal(id){
+  if(id==='modal-credito') fillClSelect('cr-cliente');
+  if(id==='modal-transferencia') fillBkSelects();
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+function fillClSelect(sid){
+  let s=document.getElementById(sid);s.innerHTML='<option value="">Seleccionar...</option>';
+  S.clientes.forEach(c=>{let o=document.createElement('option');o.value=c.id;o.textContent=`${c.nombre} ${c.apellido} (${c.pais})`;s.appendChild(o);});
+}
+function fillBkSelects(){
+  ['tr-origen','tr-destino'].forEach(sid=>{
+    let s=document.getElementById(sid);s.innerHTML='';
+    S.bancos.forEach(b=>{let o=document.createElement('option');o.value=b.id;o.textContent=`${b.banco} (${b.moneda})`;s.appendChild(o);});
+  });
+}
+
+// ====================================================
+// NOTIFY
+// ====================================================
+function notify(msg,t='success'){
+  let n=document.getElementById('notif');
+  n.innerHTML=`${t==='success'?'✅':t==='error'?'❌':'⚠️'} ${msg}`;
+  n.classList.add('show');
+  setTimeout(()=>n.classList.remove('show'),3200);
+}
+
+// ====================================================
+// SIDEBAR RATES
+// ====================================================
+function renderSidebarRates(){
+  let show=['usd_bs','eur_bs','usdt_bs'];
+  document.getElementById('sidebar-rates').innerHTML=show.map(id=>{
+    let p=PARES.find(x=>x.id===id);
+    return`<div class="rate-row"><span class="rl">${p.emoji} ${p.label}</span><span class="rv">Bs.${num(getTasa(id),2)}</span></div>`;
+  }).join('');
+}
+
+// ====================================================
+// DASHBOARD
+// ====================================================
+function badgeClass(e){return{Completada:'bg',Pendiente:'by','En proceso':'bb',Cancelada:'br',Vencido:'br',Activo:'bb',Pagado:'bg'}[e]||'bgr';}
+
+function renderDashboard(){
+  document.getElementById('today-date').textContent=new Date().toLocaleDateString('es-VE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  let comp=S.remesas.filter(r=>r.estado==='Completada');
+  let s=sym(S.moneda_principal);
+  document.getElementById('stat-total-mes').textContent=s+num(comp.reduce((a,r)=>a+r.monto,0));
+  document.getElementById('stat-completadas').textContent=comp.length;
+  document.getElementById('stat-pendientes').textContent=S.remesas.filter(r=>r.estado==='Pendiente').length+' pendientes';
+  document.getElementById('stat-clientes').textContent=S.clientes.filter(c=>c.activo).length;
+  let caja=S.movimientos.filter(m=>m.tipo==='ingreso').reduce((a,m)=>a+m.monto_bs,0)-S.movimientos.filter(m=>m.tipo==='egreso').reduce((a,m)=>a+m.monto_bs,0);
+  document.getElementById('stat-caja').textContent='Bs. '+num(caja,0);
+
+  const MES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  let vals=[8200,9400,7800,11200,13500,12000,14800,15600,13200,16800,17500,18420];
+  let mx=Math.max(...vals);
+  document.getElementById('chart-bars').innerHTML=vals.map((v,i)=>`<div class="chart-bar-group"><div class="chart-bar ${i===11?'':'blue'}" style="height:${Math.round(v/mx*120)}px"></div></div>`).join('');
+  document.getElementById('chart-labels').innerHTML=MES.map(m=>`<div style="flex:1;text-align:center;font-size:10px;color:var(--muted)">${m}</div>`).join('');
+
+  document.getElementById('last-remesas').innerHTML=[...S.remesas].reverse().slice(0,6).map(r=>`<tr><td><div style="font-weight:500">${r.cliente_nombre}</div><div style="font-size:11px;color:var(--muted)">${r.id}</div></td><td style="color:var(--gold);font-weight:600">${sym(r.moneda||'USD')}${num(r.monto)}</td><td><span class="badge ${badgeClass(r.estado)}">${r.estado}</span></td></tr>`).join('');
+  let dc=S.creditos.filter(c=>c.estado!=='Pagado');
+  document.getElementById('dashboard-creditos').innerHTML=dc.length?dc.slice(0,5).map(c=>`<tr><td>${c.cliente_nombre}</td><td style="color:var(--gold)">$${num(c.monto-c.pagado)}</td><td style="color:${c.estado==='Vencido'?'var(--danger)':'var(--muted)'}">${fmt(c.vencimiento)}</td></tr>`).join(''):'<tr><td colspan="3" style="color:var(--muted);text-align:center;padding:14px">Sin créditos activos</td></tr>';
+  document.getElementById('dashboard-bancos').innerHTML=S.bancos.map(b=>`<tr><td><div style="font-weight:500">${b.banco}</div><div style="font-size:11px;color:var(--muted)">${b.numero}</div></td><td><span class="pill">${b.moneda}</span></td><td style="font-weight:600;color:var(--success)">${b.moneda} ${num(b.saldo)}</td></tr>`).join('');
+}
+
+// ====================================================
+// REMESAS
+// ====================================================
+function renderRemesas(){filtrarRemesas();}
+function filtrarRemesas(){
+  let q=(document.getElementById('search-remesa')||{value:''}).value.toLowerCase();
+  let st=(document.getElementById('filter-status')||{value:''}).value;
+  let lista=[...S.remesas].reverse().filter(r=>(!q||(r.cliente_nombre.toLowerCase().includes(q)||r.id.toLowerCase().includes(q)))&&(!st||r.estado===st));
+  let monBadge=m=>m==='EUR'?'bp':m==='USDT'?'bo':m==='GBP'?'bgr':'bb';
+  document.getElementById('remesas-tbody').innerHTML=lista.length?lista.map(r=>`<tr>
+    <td><span style="font-family:'Syne',sans-serif;font-size:11px;color:var(--muted)">${r.id}</span></td>
+    <td><div style="font-weight:500">${r.cliente_nombre}</div><div class="tm">${r.origen}</div></td>
+    <td><span class="pill">${r.origen}</span></td>
+    <td><span class="badge ${monBadge(r.moneda||'USD')}">${r.moneda||'USD'}</span></td>
+    <td style="color:var(--gold);font-weight:700">${sym(r.moneda||'USD')}${num(r.monto)}</td>
+    <td class="tm">${num(r.tasa,2)}</td>
+    <td style="color:var(--success)">Bs. ${num(r.bs,0)}</td>
+    <td class="tm">${fmt(r.fecha)}</td>
+    <td><span class="badge ${badgeClass(r.estado)}">${r.estado}</span></td>
+    <td><button class="btn btn-g btn-sm" onclick="cambiarEstado('${r.id}')">✏️</button></td>
+  </tr>`).join(''):'<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:22px">Sin resultados</td></tr>';
+}
+function cambiarEstado(id){
+  let r=S.remesas.find(x=>x.id===id);if(!r)return;
+  let opts=['Pendiente','En proceso','Completada','Cancelada'];
+  r.estado=opts[(opts.indexOf(r.estado)+1)%opts.length];
+  save();filtrarRemesas();notify(`Estado → ${r.estado}`);
+}
+
+// --- Modal remesa logic ---
+function abrirModalRemesa(){
+  fillClSelect('rm-cliente');
+  // Poblar pares
+  let parSel=document.getElementById('rm-par');parSel.innerHTML='';
+  PARES.forEach(p=>{let o=document.createElement('option');o.value=p.id;o.textContent=`${p.emoji} ${p.label}`;parSel.appendChild(o);});
+  // Default según moneda principal
+  let mp=S.moneda_principal;
+  let defPar=mp==='EUR'?'eur_bs':mp==='GBP'?'gbp_bs':mp==='USDT'?'usdt_bs':'usd_bs';
+  parSel.value=defPar;
+  // Default origen
+  document.getElementById('rm-origen').value=mp==='EUR'?'España':mp==='GBP'?'Otro (Europa)':'USA';
+  // Limpiar
+  ['rm-monto','rm-tasa','rm-comision','rm-bs','rm-beneficiario','rm-notas'].forEach(id=>document.getElementById(id).value='');
+  onParChange();
+  openModal('modal-remesa');
+}
+
+function onOrigenChange(){
+  let origen=document.getElementById('rm-origen').value;
+  let moneda=MONEDAS_EUROPA[origen]||'USD';
+  let parId=moneda==='EUR'?'eur_bs':'usd_bs';
+  document.getElementById('rm-par').value=parId;
+  onParChange();
+}
+
+function onParChange(){
+  let parId=document.getElementById('rm-par').value;
+  let par=PARES.find(p=>p.id===parId);if(!par)return;
+  let tasa=getTasa(parId);
+  // Símbolo
+  document.getElementById('rm-sym').textContent=sym(par.de);
+  document.getElementById('rm-monto-label').textContent=`Monto Enviado (${par.de})`;
+  document.getElementById('rm-comision-label').textContent=`Comisión (${par.de})`;
+  document.getElementById('rm-tasa-label').textContent=`Tasa ${par.label}`;
+  // Hint con tasa configurada — campo queda VACÍO, sólo el placeholder indica
+  document.getElementById('rm-tasa').placeholder=`Ej: ${num(tasa,par.step<0.01?4:2)}`;
+  document.getElementById('rm-tasa').value=''; // siempre vacío al abrir/cambiar
+  document.getElementById('rm-tasa-hint').textContent=`Tasa configurada: 1 ${par.de} = ${num(tasa,par.step<0.01?4:2)} ${par.a}`;
+  document.getElementById('rm-bs').value='';
+  calcRemesa();
+}
+
+function calcRemesa(){
+  let parId=document.getElementById('rm-par').value||'usd_bs';
+  let tasaCfg=getTasa(parId);
+  let par=PARES.find(p=>p.id===parId);
+  let m=parseFloat(document.getElementById('rm-monto').value)||0;
+  let tasaInput=parseFloat(document.getElementById('rm-tasa').value);
+  let t=(!isNaN(tasaInput)&&tasaInput>0)?tasaInput:tasaCfg;
+  let com=+(m*S.comision_pct/100).toFixed(2);
+  document.getElementById('rm-comision').value=m>0?com.toFixed(2):'';
+  // Si el par llega a USD (no Bs.) no calculamos Bs.
+  if(par&&par.a==='Bs.'){
+    document.getElementById('rm-bs').value=m>0?((m-com)*t).toFixed(2):'';
+  } else {
+    document.getElementById('rm-bs').value=m>0?((m-com)*t*getTasa('usd_bs')).toFixed(2):'';
+  }
+}
+
+function guardarRemesa(){
+  let cid=parseInt(document.getElementById('rm-cliente').value);
+  let cl=S.clientes.find(c=>c.id===cid);
+  if(!cl){notify('Selecciona un cliente','error');return;}
+  let monto=parseFloat(document.getElementById('rm-monto').value)||0;
+  if(!monto){notify('Ingresa un monto','error');return;}
+  let parId=document.getElementById('rm-par').value||'usd_bs';
+  let par=PARES.find(p=>p.id===parId);
+  let tasaInput=parseFloat(document.getElementById('rm-tasa').value);
+  let tasa=(!isNaN(tasaInput)&&tasaInput>0)?tasaInput:getTasa(parId);
+  let com=+(parseFloat(document.getElementById('rm-comision').value)||0);
+  let bs=+(parseFloat(document.getElementById('rm-bs').value)||0);
+  let id='REM-'+String(S.remesas.length+1).padStart(4,'0');
+  S.remesas.push({id,cliente_id:cl.id,cliente_nombre:`${cl.nombre} ${cl.apellido}`,origen:document.getElementById('rm-origen').value,moneda:par?.de||'USD',par_id:parId,monto,comision:com,tasa,bs,beneficiario:document.getElementById('rm-beneficiario').value,banco_ve:document.getElementById('rm-banco-ve').value,metodo:document.getElementById('rm-metodo').value,estado:document.getElementById('rm-estado').value,fecha:new Date().toISOString().split('T')[0],notas:document.getElementById('rm-notas').value});
+  save();closeModal('modal-remesa');
+  notify(`✅ Remesa ${id} — ${sym(par?.de||'USD')}${num(monto)} → Bs. ${num(bs,0)}`);
+  filtrarRemesas();
+}
+
+// ====================================================
+// CLIENTES
+// ====================================================
+function renderClientes(){filtrarClientes();}
+function filtrarClientes(){
+  let q=(document.getElementById('search-cliente')||{value:''}).value.toLowerCase();
+  let lista=S.clientes.filter(c=>!q||(c.nombre+' '+c.apellido).toLowerCase().includes(q)||c.telefono.includes(q));
+  document.getElementById('clientes-tbody').innerHTML=lista.map(c=>{
+    let remC=S.remesas.filter(r=>r.cliente_id===c.id);
+    let total=remC.reduce((a,r)=>a+r.monto,0);
+    let ini=(c.nombre[0]+(c.apellido[0]||'')).toUpperCase();
+    return`<tr>
+      <td><div class="flex-c gap-8"><div class="avatar">${ini}</div><div><div style="font-weight:500">${c.nombre} ${c.apellido}</div><div class="tm">${c.email}</div></div></div></td>
+      <td><span class="pill">${c.pais}</span></td>
+      <td class="tm">${c.telefono}</td>
+      <td style="color:var(--gold);font-weight:600">$${num(total)}</td>
+      <td><span class="badge bb">${remC.length}</span></td>
+      <td><span class="badge ${c.activo?'bg':'bgr'}">${c.activo?'Activo':'Inactivo'}</span></td>
+      <td><button class="btn btn-g btn-sm" onclick="toggleCliente(${c.id})">${c.activo?'⏸':'▶'}</button></td>
+    </tr>`;
+  }).join('');
+}
+function toggleCliente(id){let c=S.clientes.find(x=>x.id===id);c.activo=!c.activo;save();filtrarClientes();notify(`Cliente ${c.activo?'activado':'desactivado'}`);}
+function guardarCliente(){
+  let nombre=document.getElementById('cl-nombre').value.trim();
+  if(!nombre){notify('Ingresa el nombre','error');return;}
+  S.clientes.push({id:S.clientes.length+1,nombre,apellido:document.getElementById('cl-apellido').value,pais:document.getElementById('cl-pais').value,telefono:document.getElementById('cl-telefono').value,email:document.getElementById('cl-email').value,doc:document.getElementById('cl-doc').value,activo:true,notas:document.getElementById('cl-notas').value});
+  save();closeModal('modal-cliente');notify('✅ Cliente registrado');renderClientes();
+}
+
+// ====================================================
+// CAJA
+// ====================================================
+function renderCaja(){
+  let filter=(document.getElementById('filter-caja')||{value:'todos'}).value;
+  let lista=S.movimientos.filter(m=>filter==='todos'||m.tipo===filter).sort((a,b)=>b.id-a.id);
+  let ing=S.movimientos.filter(m=>m.tipo==='ingreso').reduce((a,m)=>a+m.monto_bs,0);
+  let eg=S.movimientos.filter(m=>m.tipo==='egreso').reduce((a,m)=>a+m.monto_bs,0);
+  let saldo=ing-eg;
+  let today=new Date().toISOString().split('T')[0];
+  let ingH=S.movimientos.filter(m=>m.tipo==='ingreso'&&m.fecha===today).reduce((a,m)=>a+m.monto_bs,0);
+  let egH=S.movimientos.filter(m=>m.tipo==='egreso'&&m.fecha===today).reduce((a,m)=>a+m.monto_bs,0);
+  document.getElementById('caja-saldo-total').textContent='Bs. '+num(saldo,0);
+  document.getElementById('caja-ultima').textContent=new Date().toLocaleDateString('es-VE');
+  document.getElementById('caja-ing-hoy').textContent='Bs. '+num(ingH,0);
+  document.getElementById('caja-eg-hoy').textContent='Bs. '+num(egH,0);
+  let bal=ingH-egH;
+  let bEl=document.getElementById('caja-balance-hoy');bEl.textContent='Bs. '+num(bal,0);bEl.style.color=bal>=0?'var(--success)':'var(--danger)';
+  document.getElementById('caja-tbody').innerHTML=lista.length?lista.map(m=>`<tr>
+    <td class="tm">${fmt(m.fecha)}</td>
+    <td style="font-weight:500">${m.desc}</td>
+    <td><span class="pill">${m.cat||''}</span></td>
+    <td><span class="badge ${m.tipo==='ingreso'?'bg':'br'}">${m.tipo==='ingreso'?'📥 Ingreso':'📤 Egreso'}</span></td>
+    <td style="font-weight:700;color:${m.tipo==='ingreso'?'var(--success)':'var(--danger)'}">${m.tipo==='ingreso'?'+':'-'}Bs. ${num(m.monto_bs,0)}</td>
+    <td class="tm">$${num(m.monto_usd)}</td>
+    <td class="tm">${m.responsable}</td>
+  </tr>`).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Sin movimientos</td></tr>';
+}
+function openMovTipo(tipo){
+  document.getElementById('mov-tipo').value=tipo;
+  document.getElementById('mov-title').textContent=tipo==='ingreso'?'📥 Registro de Ingreso':'📤 Registro de Egreso';
+  openModal('modal-movimiento');
+}
+function guardarMovimiento(){
+  let desc=document.getElementById('mov-desc').value.trim();
+  if(!desc){notify('Ingresa descripción','error');return;}
+  let mb=parseFloat(document.getElementById('mov-monto-bs').value)||0;
+  if(!mb){notify('Ingresa el monto','error');return;}
+  S.movimientos.push({id:S.movimientos.length+1,fecha:new Date().toISOString().split('T')[0],desc,tipo:document.getElementById('mov-tipo').value,monto_bs:mb,monto_usd:parseFloat(document.getElementById('mov-monto-usd').value)||(+(mb/getTasa('usd_bs')).toFixed(2)),responsable:document.getElementById('mov-resp').value||'Administrador',cat:document.getElementById('mov-cat').value});
+  save();closeModal('modal-movimiento');notify('✅ Movimiento registrado');renderCaja();
+}
+function arqCaja(){
+  let ing=S.movimientos.filter(m=>m.tipo==='ingreso').reduce((a,m)=>a+m.monto_bs,0);
+  let eg=S.movimientos.filter(m=>m.tipo==='egreso').reduce((a,m)=>a+m.monto_bs,0);
+  alert(`ARQUEO DE CAJA\n${new Date().toLocaleDateString('es-VE')}\n\nIngresos: Bs. ${num(ing,2)}\nEgresos:  Bs. ${num(eg,2)}\n${'─'.repeat(32)}\nSaldo:    Bs. ${num(ing-eg,2)}\n\nMovimientos: ${S.movimientos.length}\nRemesas registradas: ${S.remesas.length}`);
+}
+
+// ====================================================
+// CRÉDITOS
+// ====================================================
+function renderCreditos(){
+  document.getElementById('credito-total-otorgado').textContent='$'+num(S.creditos.reduce((a,c)=>a+c.monto,0));
+  document.getElementById('credito-pendiente').textContent='$'+num(S.creditos.reduce((a,c)=>a+(c.monto-c.pagado),0));
+  document.getElementById('credito-cobrado').textContent='$'+num(S.creditos.reduce((a,c)=>a+c.pagado,0));
+  document.getElementById('creditos-tbody').innerHTML=S.creditos.map(c=>{
+    let pct=Math.round((c.pagado/c.monto)*100);
+    return`<tr>
+      <td style="font-weight:500">${c.cliente_nombre}</td>
+      <td style="color:var(--gold)">$${num(c.monto)}</td>
+      <td class="tm">Bs. ${num(c.monto_bs,0)}</td>
+      <td><div style="color:var(--success);font-weight:500">$${num(c.pagado)}</div><div class="credito-bar"><div class="credito-fill" style="width:${pct}%"></div></div><div style="font-size:10px;color:var(--muted)">${pct}%</div></td>
+      <td style="color:${c.estado==='Vencido'?'var(--danger)':'var(--text)'}">$${num(c.monto-c.pagado)}</td>
+      <td style="color:${c.estado==='Vencido'?'var(--danger)':'var(--muted)'}">${fmt(c.vencimiento)}</td>
+      <td><span class="badge ${badgeClass(c.estado)}">${c.estado}</span></td>
+      <td><button class="btn btn-s btn-sm" onclick="abonarCredito(${c.id})">💰 Abonar</button></td>
+    </tr>`;
+  }).join('');
+}
+function abonarCredito(id){
+  let c=S.creditos.find(x=>x.id===id);
+  let m=parseFloat(prompt(`Abonar crédito de ${c.cliente_nombre}\nPendiente: $${num(c.monto-c.pagado)}\n\nMonto a abonar:`));
+  if(!m||isNaN(m))return;
+  c.pagado=Math.min(c.pagado+m,c.monto);
+  c.estado=c.pagado>=c.monto?'Pagado':'Activo';
+  save();notify(`✅ Abono de $${num(m)} registrado`);renderCreditos();
+}
+function guardarCredito(){
+  let cid=parseInt(document.getElementById('cr-cliente').value);
+  let cl=S.clientes.find(c=>c.id===cid);
+  if(!cl){notify('Selecciona un cliente','error');return;}
+  let monto=parseFloat(document.getElementById('cr-monto').value)||0;
+  if(!monto){notify('Ingresa el monto','error');return;}
+  S.creditos.push({id:S.creditos.length+1,cliente_id:cl.id,cliente_nombre:`${cl.nombre} ${cl.apellido}`,monto,pagado:0,monto_bs:+(monto*getTasa('usd_bs')).toFixed(2),vencimiento:document.getElementById('cr-vence').value,interes:parseFloat(document.getElementById('cr-interes').value)||0,desc:document.getElementById('cr-desc').value,estado:'Activo'});
+  save();closeModal('modal-credito');notify('✅ Crédito registrado');renderCreditos();
+}
+
+// ====================================================
+// BANCOS
+// ====================================================
+function renderBancos(){
+  document.getElementById('bancos-cards').innerHTML=S.bancos.map(b=>`<div class="caja-mini">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+      <div style="font-weight:700;font-size:13px">${b.banco}</div><span class="pill">${b.pais}</span>
+    </div>
+    <div class="label">${b.titular} · ${b.numero}</div>
+    <div class="val pos">${b.moneda} ${num(b.saldo)}</div>
+  </div>`).join('');
+  document.getElementById('bancos-mov-tbody').innerHTML=[...S.bancos_mov].reverse().map(m=>`<tr>
+    <td class="tm">${fmt(m.fecha)}</td><td style="font-weight:500">${m.banco}</td><td>${m.desc}</td>
+    <td><span class="badge ${m.tipo==='Crédito'?'bg':'br'}">${m.tipo}</span></td>
+    <td style="font-weight:600;color:${m.tipo==='Crédito'?'var(--success)':'var(--danger)'}">${m.moneda} ${num(m.monto)}</td>
+  </tr>`).join('');
+}
+function guardarBanco(){
+  let banco=document.getElementById('bk-banco').value.trim();
+  if(!banco){notify('Ingresa el banco','error');return;}
+  S.bancos.push({id:S.bancos.length+1,banco,titular:document.getElementById('bk-titular').value,numero:document.getElementById('bk-numero').value,moneda:document.getElementById('bk-moneda').value,saldo:parseFloat(document.getElementById('bk-saldo').value)||0,pais:document.getElementById('bk-pais').value});
+  save();closeModal('modal-banco');notify('✅ Cuenta registrada');renderBancos();
+}
+function guardarTransferencia(){
+  let oid=parseInt(document.getElementById('tr-origen').value),did=parseInt(document.getElementById('tr-destino').value);
+  if(oid===did){notify('Selecciona cuentas distintas','error');return;}
+  let monto=parseFloat(document.getElementById('tr-monto').value)||0;
+  if(!monto){notify('Ingresa monto','error');return;}
+  let bo=S.bancos.find(b=>b.id===oid),bd=S.bancos.find(b=>b.id===did);
+  if(bo.saldo<monto){notify('Saldo insuficiente','error');return;}
+  bo.saldo-=monto;bd.saldo+=monto;
+  let f=new Date().toISOString().split('T')[0];
+  S.bancos_mov.push({fecha:f,banco:bo.banco,moneda:bo.moneda,desc:`Transferencia → ${bd.banco}`,tipo:'Débito',monto});
+  S.bancos_mov.push({fecha:f,banco:bd.banco,moneda:bd.moneda,desc:`Transferencia ← ${bo.banco}`,tipo:'Crédito',monto});
+  save();closeModal('modal-transferencia');notify(`✅ Transferido ${bo.moneda} ${num(monto)}`);renderBancos();
+}
+
+// ====================================================
+// REPORTES
+// ====================================================
+function renderReportes(){
+  let tr=S.remesas.reduce((a,r)=>a+r.monto,0);
+  let tc=S.remesas.reduce((a,r)=>a+r.comision,0);
+  let tb=S.remesas.reduce((a,r)=>a+r.bs,0);
+  let usa=S.remesas.filter(r=>r.origen==='USA').length;
+  let eu=S.remesas.filter(r=>MONEDAS_EUROPA[r.origen]).length;
+  document.getElementById('stats-rapidas').innerHTML=`<div style="display:grid;gap:10px">
+    <div class="caja-mini"><div class="label">Total movido ($)</div><div class="val pos">$${num(tr)}</div></div>
+    <div class="caja-mini"><div class="label">Total comisiones</div><div class="val" style="color:var(--gold)">$${num(tc)}</div></div>
+    <div class="caja-mini"><div class="label">Total Bs. entregados</div><div class="val pos">Bs. ${num(tb,0)}</div></div>
+    <div class="caja-mini"><div class="label">Desde USA / Europa</div><div class="val" style="font-size:15px">${usa} / ${eu}</div></div>
+  </div>`;
+}
+function generarReporte(){
+  let tipo=document.getElementById('rep-tipo').value;
+  let lista=tipo==='Todos'?S.remesas:tipo==='USA'?S.remesas.filter(r=>r.origen==='USA'):S.remesas.filter(r=>MONEDAS_EUROPA[r.origen]);
+  let total=lista.reduce((a,r)=>a+r.monto,0);
+  let comp=lista.filter(r=>r.estado==='Completada').length;
+  let com=lista.reduce((a,r)=>a+r.comision,0);
+  document.getElementById('reporte-resultado').innerHTML=`<div class="alert alert-s">📊 <strong>${tipo} · ${document.getElementById('rep-periodo').value}</strong><br>Transacciones: ${lista.length} &nbsp;|&nbsp; Completadas: ${comp}<br>Total enviado: <strong>$${num(total)}</strong> &nbsp;|&nbsp; Comisiones: <strong>$${num(com)}</strong></div>`;
+}
+
+// ====================================================
+// CONFIG
+// ====================================================
+function renderConfig(){
+  let tbl=document.getElementById('rates-config-table');
+  tbl.innerHTML='<tr style="border-bottom:1px solid var(--border)"><th style="padding:8px 6px;color:var(--muted);font-size:11px;text-transform:uppercase">Par de Cambio</th><th style="padding:8px 6px;color:var(--muted);font-size:11px;text-transform:uppercase">Tasa Actual</th><th style="padding:8px 6px;color:var(--muted);font-size:11px;text-transform:uppercase">Estado</th></tr>';
+  PARES.forEach(p=>{
+    let v=getTasa(p.id);
+    tbl.innerHTML+=`<tr>
+      <td><span class="pair-tag">${p.de}</span> <span style="color:var(--muted);font-size:12px">→</span> <span class="pair-tag">${p.a}</span> <span style="color:var(--muted);font-size:11px;margin-left:4px">${p.emoji} ${p.label}</span></td>
+      <td><input type="number" id="tasa-${p.id}" value="${v}" step="${p.step}" min="0"></td>
+      <td><span class="badge bg">Activa</span></td>
+    </tr>`;
+  });
+  document.getElementById('comision-pct').value=S.comision_pct;
+  document.getElementById('cfg-nombre').value=S.empresa_nombre;
+  document.getElementById('cfg-resp').value=S.empresa_resp;
+  document.getElementById('cfg-moneda-principal').value=S.moneda_principal;
+  actualizarInfoBox();
+}
+function guardarTasas(){
+  PARES.forEach(p=>{let inp=document.getElementById('tasa-'+p.id);if(inp)S.tasas[p.id]=parseFloat(inp.value)||p.def;});
+  S.comision_pct=parseFloat(document.getElementById('comision-pct').value)||3.5;
+  save();renderSidebarRates();notify('✅ Tasas guardadas correctamente');
+}
+function guardarEmpresa(){
+  S.empresa_nombre=document.getElementById('cfg-nombre').value||'RemesasVE';
+  S.empresa_resp=document.getElementById('cfg-resp').value||'Administrador';
+  save();notify('✅ Datos guardados');
+}
+function cambiarMonedaPrincipal(){
+  S.moneda_principal=document.getElementById('cfg-moneda-principal').value;
+  save();actualizarInfoBox();aplicarBanner();
+  notify(`💱 Moneda principal: ${S.moneda_principal}`,'warn');
+}
+function actualizarInfoBox(){
+  let m=S.moneda_principal;
+  let parId=m==='EUR'?'eur_bs':m==='GBP'?'gbp_bs':m==='USDT'?'usdt_bs':'usd_bs';
+  let par=PARES.find(p=>p.id===parId);
+  let t=getTasa(parId);
+  document.getElementById('moneda-info-box').innerHTML=`<strong>${par?.emoji} ${m} — Moneda Principal Activa</strong><br>Las remesas nuevas usarán por defecto <strong>${m}</strong>.<br>Tasa activa: <strong>1 ${m} = ${num(t,par?.step<0.01?4:2)} ${par?.a||'Bs.'}</strong>`;
+}
+function aplicarBanner(){
+  let m=S.moneda_principal;
+  let banner=document.getElementById('moneda-banner');
+  let main=document.getElementById('main-content');
+  if(m!=='USD'){
+    banner.classList.add('show');
+    main.style.paddingTop='56px';
+    document.getElementById('moneda-banner-txt').innerHTML=`Moneda principal activa: <strong>${m}</strong> — Las remesas se calcularán en ${m} por defecto`;
+  } else {
+    banner.classList.remove('show');
+    main.style.paddingTop='';
+  }
+}
+
+// ====================================================
+// EXPORT / RESET
+// ====================================================
+function exportarDatos(){
+  let blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='remesasve_backup.json';a.click();
+  notify('📤 Datos exportados');
+}
+function resetearDatos(){
+  if(confirm('⚠️ ¿Borrar TODOS los datos? Esta acción no se puede deshacer.')){localStorage.removeItem(LS_KEY);location.reload();}
+}
+
+// ====================================================
+// INIT
+// ====================================================
+(function(){
+  let had=load();
+  // Asegurar tasas completas (migración de versiones)
+  if(!S.tasas) S.tasas={};
+  PARES.forEach(p=>{if(S.tasas[p.id]===undefined) S.tasas[p.id]=p.def;});
+  if(!had||!S.clientes||S.clientes.length===0) seed();
+  renderSidebarRates();
+  aplicarBanner();
+  renderDashboard();
+  document.getElementById('today-date').textContent=new Date().toLocaleDateString('es-VE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+})();
+</script>
+</body>
+</html>
