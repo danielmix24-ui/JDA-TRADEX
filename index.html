@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JDA TRADEX — Sistema Integrado</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0e1a; --surface:#111827; --surface2:#1a2235; --border:#1f2d45;
+    --gold:#f5c842; --gold2:#e8a820; --text:#e8edf5; --muted:#6b7a99;
+    --blue:#3b82f6; --teal:#0d9488; --danger:#fc5b5b; --success:#4ade80;
+    --purple:#a78bfa; --orange:#fb923c;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+  
+  /* ESTILOS INTERNOS DE LA PANTALLA DE LOGIN */
+  .login-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: var(--bg);
+  }
+  .login-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 40px 30px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    text-align: center;
+  }
+  .login-card .logo h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--gold);
+    letter-spacing: -0.5px;
+  }
+  .login-card .logo span {
+    color: var(--muted);
+    font-size: 12px;
+    display: block;
+    margin-top: 4px;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  #error-msg {
+    color: var(--danger);
+    font-size: 13px;
+    margin-top: 15px;
+    display: none;
+  }
+
+  /* ESTRUCTURA DEL PANEL (OCULTO POR DEFECTO) */
+  #app-container {
+    display: none; /* Se activa al iniciar sesión */
+  }
+
+  /* BARRA DE SESIÓN SUPERIOR */
+  .session-navbar {
+    margin-left: 244px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .session-user-info {
+    font-size: 13.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .session-user-info strong {
+    color: var(--gold);
+  }
+  .btn-logout {
+    background: rgba(252,91,91,0.1);
+    color: var(--danger);
+    border: 1px solid rgba(252,91,91,0.2);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-logout:hover {
+    background: rgba(252,91,91,0.2);
+  }
+
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:244px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;}
+  .logo{padding:22px 20px;border-bottom:1px solid var(--border);}
+  .logo h1{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--gold);}
+  .logo span{color:var(--muted);font-size:11px;display:block;margin-top:2px;}
+  .nav{padding:14px 12px;flex:1;overflow-y:auto;}
+  .nav-section{margin-bottom:22px;}
+  .nav-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;padding:0 8px;margin-bottom:6px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13.5px;color:var(--muted);transition:all 0.15s;margin-bottom:2px;}
+  .nav-item:hover{background:var(--surface2);color:var(--text);}
+  .nav-item.active{background:rgba(245,200,66,0.1);color:var(--gold);font-weight:500;}
+  .nav-item .icon{width:16px;text-align:center;font-size:15px;}
+  .sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);}
+  
+  .main{margin-left:244px;padding:26px 30px;min-height:100vh;}
+  .page{display:none;}.page.active{display:block;}
+  .page-header{margin-bottom:24px;}
+  .page-header h2{font-family:'Syne',sans-serif;font-size:25px;font-weight:700;}
+  .page-header p{color:var(--muted);font-size:13px;margin-top:4px;}
+  
+  /* ELEMENTOS INTERNOS DEL DASHBOARD */
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden;}
+  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ac,var(--gold));}
+  .stat-card .si{font-size:22px;margin-bottom:8px;}
+  .stat-card .sv{font-size:24px;font-weight:700;font-family:'Syne',sans-serif;}
+  .stat-card .sl{font-size:12px;color:var(--muted);margin-top:2px;}
+  .stat-card .sd{font-size:11px;margin-top:7px;}
+  .stat-card.g{--ac:var(--success);}.stat-card.gd{--ac:var(--gold);}.stat-card.b{--ac:var(--blue);}.stat-card.t{--ac:var(--teal);}
+  
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:18px;}
+  .card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;padding:9px 13px;color:var(--muted);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:0.7px;border-bottom:1px solid var(--border);}
+  td{padding:11px 13px;border-bottom:1px solid rgba(31,45,69,0.5);vertical-align:middle;}
+  
+  /* COMPONENTES FORMULARIOS Y MODALES */
+  .btn{padding:8px 15px;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-p{background:var(--gold);color:#0a0e1a;}.btn-p:hover{background:var(--gold2);}
+  .btn-g{background:transparent;color:var(--muted);border:1px solid var(--border);}.btn-g:hover{border-color:var(--gold);color:var(--gold);}
+  .form-grid{display:grid;gap:14px;}.fg2{grid-template-columns:1fr 1fr;}
+  .field label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px;}
+  .field input,.field select{width:100%;padding:9px 11px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;}
+  .field input:focus,.field select:focus{border-color:var(--gold);}
+  .field input[readonly]{background:rgba(245,200,66,0.05);border-color:rgba(245,200,66,0.2);color:var(--gold);font-weight:700;}
+  
+  .monto-wrap{position:relative;}
+  .monto-prefix{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--gold);font-weight:700;font-size:14px;}
+  .monto-wrap input{padding-left:28px;}
+  
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px;width:600px;max-width:96vw;}
+  .modal h3{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:18px;}
+  .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+  .search-box{position:relative;width:270px;}
+  .search-box input{width:100%;padding:8px 12px 8px 34px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;}
+  .search-box::before{content:'🔍';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;}
+
+  @media(max-width:900px){
+    .sidebar{width:58px;}.nav-item span,.logo h1,.logo span,.nav-label,.sidebar-footer{display:none;}
+    .main{margin-left:58px;padding:14px;}
+    .session-navbar{margin-left:58px;padding:12px 14px;}
+    .stats-grid,.fg2{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+  <!-- VISTA 1: INTERFAZ DE ACCESO SEGURO -->
+  <div id="login-container" class="login-wrapper">
+    <div class="login-card">
+      <div class="logo">
+        <h1>🛡️ JDA TRADEX</h1>
+        <span>Sistema de Control Privado</span>
+      </div>
+      <form id="login-form" onsubmit="validarAccesoGlobal(event)">
+        <div class="field">
+          <label>Usuario Oficial</label>
+          <input type="text" id="username" placeholder="Ingresa tu usuario" required>
+        </div>
+        <div class="field">
+          <label>Contraseña de Seguridad</label>
+          <input type="password" id="password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn-login btn btn-p" style="width:100%; justify-content:center; padding:12px;">Ingresar al Sistema ⚡</button>
+        <div id="error-msg">❌ Usuario o clave incorrectos. Intenta de nuevo.</div>
+      </form>
+    </div>
+  </div>
+
+  <!-- VISTA 2: DASHBOARD PRINCIPAL COMPLETO (INTERCONECTADO) -->
+  <div id="app-container">
+    
+    <div class="session-navbar">
+      <div class="session-user-info">
+        <span>🌐 Panel Conectado | Cuenta de: <strong id="session-user-display">Daniel</strong></span>
+      </div>
+      <button class="btn-logout" onclick="ejecutarCerrarSesionGlobal()">Cerrar Sesión 🔄</button>
+    </div>
+
+    <nav class="sidebar">
+      <div class="logo">
+        <h1>💸 JDA TRADEX</h1>
+        <span>Sistema de Gestión</span>
+      </div>
+      <div class="nav">
+        <div class="nav-section">
+          <div class="nav-label">Principal</div>
+          <div class="nav-item active" onclick="goto('dashboard')"><span class="icon">📊</span><span>Dashboard</span></div>
+          <div class="nav-item" onclick="goto('remesas')"><span class="icon">💸</span><span>Remesas</span></div>
+          <div class="nav-item" onclick="goto('clientes')"><span class="icon">👥</span><span>Clientes</span></div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-label">Finanzas</div>
+          <div class="nav-item" onclick="goto('caja')"><span class="icon">🗄️</span><span>Arqueo de Caja</span></div>
+          <div class="nav-item" onclick="goto('creditos')"><span class="icon">💳</span><span>Créditos</span></div>
+        </div>
+      </div>
+      <div class="sidebar-footer"><small>v2.1 · Américas</small></div>
+    </nav>
+
+    <main class="main">
+      <!-- SUB-PÁGINA DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header"><h2>Dashboard</h2><p>Resumen general · <span id="today-date"></span></p></div>
+        <div class="stats-grid">
+          <div class="stat-card gd"><div class="si">💸</div><div class="sv">$0</div><div class="sl">Remesas este mes</div></div>
+          <div class="stat-card g"><div class="si">✅</div><div class="sv">0</div><div class="sl">Completadas</div></div>
+          <div class="stat-card b"><div class="si">👥</div><div class="sv">0</div><div class="sl">Clientes activos</div></div>
+          <div class="stat-card t"><div class="si">🏦</div><div class="sv">Bs. 0</div><div class="sl">Saldo en caja</div></div>
+        </div>
+      </div>
+
+      <!-- SUB-PÁGINA REMESAS -->
+      <div class="page" id="page-remesas">
+        <div class="page-header"><h2>💸 Remesas</h2><p>Envíos Globales → Venezuela</p></div>
+        <div class="topbar">
+          <div class="search-box"><input placeholder="Buscar cliente..."></div>
+          <button class="btn btn-p" onclick="abrirModalRemesa()">+ Nueva Remesa</button>
+        </div>
+        <div class="card"><table><thead><tr><th>ID</th><th>Cliente</th><th>Origen</th><th>Monto</th><th>Tasa</th><th>Bs. Entregados</th></tr></thead><tbody id="remesas-tbody"><tr><td colspan="6" style="text-align:center;color:var(--muted);">No hay operaciones registradas.</td></tr></tbody></table></div>
+      </div>
+
+      <!-- SUB-PÁGINA CLIENTES -->
+      <div class="page" id="page-clientes">
+        <div class="page-header"><h2>👥 Clientes</h2><p>Base de datos general</p></div>
+        <div class="topbar">
+          <div class="search-box"><input placeholder="Buscar..."></div>
+          <button class="btn btn-p" onclick="openModal('modal-cliente')">+ Nuevo Cliente</button>
+        </div>
+        <div class="card"><table><thead><tr><th>Cliente</th><th>País Origen</th><th>Teléfono</th></tr></thead><tbody><tr><td colspan="3" style="text-align:center;color:var(--muted);">No hay clientes registrados.</td></tr></tbody></table></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL: NUEVA REMESA (BRASIL Y PERÚ INTEGRADOS COMPLETAMENTE) -->
+  <div class="modal-overlay" id="modal-remesa">
+    <div class="modal">
+      <h3>💸 Nueva Remesa — JDA TRADEX</h3>
+      <div class="form-grid fg2">
+        <div class="field"><label>País Origen</label>
+          <select id="rm-origen" onchange="onOrigenChange()">
+            <option value="USA">🇺🇸 USA</option>
+            <option value="España">🇪🇸 España</option>
+            <option value="Brasil">🇧🇷 Brasil</option>
+            <option value="Peru">🇵🇪 Perú</option>
+          </select>
+        </div>
+        <div class="field"><label>Par de Cambio</label>
+          <select id="rm-par" onchange="onParChange()">
+            <option value="USD_VES">USD → VES</option>
+            <option value="EUR_VES">EUR → VES</option>
+            <option value="BRL_VES">BRL → VES (Real)</option>
+            <option value="PEN_VES">PEN → VES (Sol)</option>
+          </select>
+        </div>
+        <div class="field"><label>Monto Enviado</label>
+          <div class="monto-wrap"><span class="monto-prefix" id="rm-sym">$</span><input type="number" id="rm-monto" placeholder="0.00" oninput="calcRemesa()"></div>
+        </div>
+        <div class="field"><label>Tasa Aplicada</label><input type="number" id="rm-tasa" step="0.01" value="45.50" oninput="calcRemesa()"></div>
+        <div class="field"><label>Comisión</label><input type="number" id="rm-comision" value="0" oninput="calcRemesa()"></div>
+        <div class="field"><label>Bs. a Entregar</label><input type="number" id="rm-bs" readonly placeholder="— auto —"></div>
+        <div class="field"><label>Método de Recepción</label>
+          <select><option>Zelle</option><option>Pix (Brasil)</option><option>Transferencia Perú</option><option>Bizum</option><option>Efectivo</option></select>
+        </div>
+        <div class="field"><label>Beneficiario VE</label><input type="text" placeholder="Nombre en Venezuela"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-g" onclick="closeModal('modal-remesa')">Cancelar</button>
+        <button class="btn btn-p" onclick="guardarRemesa()">✅ Procesar Orden</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVO CLIENTE -->
+  <div class="modal-overlay" id="modal-cliente">
+    <div class="modal">
+      <h3>👤 Nuevo Cliente</h3>
+      <div class="form-grid fg2">
+        <div class="field"><label>Nombre</label><input type="text" placeholder="Nombre completo"></div>
+        <div class="field"><label>Teléfono</label><input type="text" placeholder="+58..."></div>
+        <div class="field"><label>Ubicación / Origen</label>
+          <select><option>USA</option><option>España</option><option>Brasil</option><option>Perú</option></select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-g" onclick="closeModal('modal-cliente')">Cancelar</button>
+        <button class="btn btn-p" onclick="guardarCliente()">✅ Guardar Cliente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LÓGICA INTEGRADA CENTRAL DE SEGURIDAD Y CÁLCULOS -->
+  <script>
+    const usuariosPermitidos = {
+        "daniel": { clave: "tradex2026", nombre: "Daniel" },
+        "admin": { clave: "jdaseguro2026", nombre: "Administrador" }
+    };
+
+    // Comprobación de persistencia de sesión al cargar en GitHub Pages
+    window.onload = function() {
+        const sesionGuardada = localStorage.getItem("tradex_sesion_activa");
+        if(sesionGuardada) {
+            desplegarDashboard(sesionGuardada);
+        }
+    };
+
+    function validarAccesoGlobal(event) {
+        event.preventDefault();
+        const userIn = document.getElementById("username").value.trim().toLowerCase();
+        const passIn = document.getElementById("password").value;
+        const errorMsg = document.getElementById("error-msg");
+
+        if (usuariosPermitidos[userIn] && usuariosPermitidos[userIn].clave === passIn) {
+            const nombre = usuariosPermitidos[userIn].nombre;
+            localStorage.setItem("tradex_sesion_activa", nombre);
+            desplegarDashboard(nombre);
+        } else {
+            errorMsg.style.display = "block";
+        }
+    }
+
+    function desplegarDashboard(nombreUsuario) {
+        document.getElementById("login-container").style.display = "none";
+        document.getElementById("app-container").style.display = "block";
+        document.getElementById("session-user-display").innerText = nombreUsuario;
+        document.getElementById('today-date').innerText = new Date().toLocaleDateString('es-VE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function ejecutarCerrarSesionGlobal() {
+        localStorage.removeItem("tradex_sesion_activa");
+        document.getElementById("app-container").style.display = "none";
+        document.getElementById("login-container").style.display = "flex";
+    }
+
+    function goto(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        const targetPage = document.getElementById('page-' + pageId);
+        if(targetPage) targetPage.classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    
+    function abrirModalRemesa(){ openModal('modal-remesa'); onOrigenChange(); }
+
+    function onOrigenChange() {
+      const origen = document.getElementById('rm-origen').value;
+      const sym = document.getElementById('rm-sym');
+      const par = document.getElementById('rm-par');
+      const tasa = document.getElementById('rm-tasa');
+
+      if (origen === 'USA') {
+        sym.innerText = '$'; par.value = 'USD_VES'; tasa.value = "45.50";
+      } else if (origen === 'España') {
+        sym.innerText = '€'; par.value = 'EUR_VES'; tasa.value = "48.20";
+      } else if (origen === 'Brasil') {
+        sym.innerText = 'R$'; par.value = 'BRL_VES'; tasa.value = "8.10";
+      } else if (origen === 'Peru') {
+        sym.innerText = 'S/'; par.value = 'PEN_VES'; tasa.value = "12.30";
+      }
+      calcRemesa();
+    }
+
+    function onParChange() {
+      const par = document.getElementById('rm-par').value;
+      const origen = document.getElementById('rm-origen');
+      if(par === 'USD_VES') origen.value = 'USA';
+      if(par === 'EUR_VES') origen.value = 'España';
+      if(par === 'BRL_VES') origen.value = 'Brasil';
+      if(par === 'PEN_VES') origen.value = 'Peru';
+      onOrigenChange();
+    }
+
+    function calcRemesa() {
+      const monto = parseFloat(document.getElementById('rm-monto').value) || 0;
+      const tasa = parseFloat(document.getElementById('rm-tasa').value) || 0;
+      const comision = parseFloat(document.getElementById('rm-comision').value) || 0;
+      const totalBs = (monto - comision) * tasa;
+      document.getElementById('rm-bs').value = totalBs > 0 ? totalBs.toFixed(2) : "";
+    }
+
+    function guardarRemesa() { alert("✅ ¡Remesa procesada con éxito!"); closeModal('modal-remesa'); }
+    function guardarCliente() { alert("✅ Cliente guardado."); closeModal('modal-cliente'); }
+  </script>
+</body>
+</html>
