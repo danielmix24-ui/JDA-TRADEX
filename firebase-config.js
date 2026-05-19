@@ -9,7 +9,7 @@ const firebaseConfig = {
   authDomain: "jda-tradex.firebaseapp.com",
   databaseURL: "https://jda-tradex-default-rtdb.firebaseio.com",
   projectId: "jda-tradex",
-  storageBucket: "jda-tradex.firebasestorage.app",
+  storageBucket: "jda-tradex.appspot.com",
   messagingSenderId: "171375297732",
   appId: "1:171375297732:web:1075542efff75dd7ce3591"
 };
