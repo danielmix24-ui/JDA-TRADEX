@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JDA TRADEX — Sistema de Control v5.2</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0e1a; --surface:#111827; --surface2:#1a2235; --border:#1f2d45;
+    --gold:#f5c842; --gold2:#e8a820; --text:#e8edf5; --muted:#6b7a99;
+    --blue:#3b82f6; --teal:#0d9488; --danger:#fc5b5b; --success:#4ade80;
+    --warning:#facc15; --purple:#a855f7;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+  
+  /* LOGIN CARD */
+  .login-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); }
+  .login-card { background: var(--surface); border: 1px solid var(--border); padding: 40px 30px; border-radius: 16px; width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+  .login-card .logo h1 { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; color: var(--gold); }
+  .login-card .logo span { color: var(--muted); font-size: 12px; display: block; margin-top: 4px; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 1px; }
+  #error-msg { color: var(--danger); font-size: 13px; margin-top: 15px; display: none; }
+
+  #app-container { display: none; }
+
+  /* TOP NAVBAR */
+  .session-navbar { margin-left: 260px; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 30px; display: flex; justify-content: space-between; align-items: center; }
+  .session-user-info { font-size: 13.5px; display: flex; align-items: center; gap: 8px; }
+  .session-user-info strong { color: var(--gold); }
+  .btn-logout { background: rgba(252,91,91,0.1); color: var(--danger); border: 1px solid rgba(252,91,91,0.2); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+  .btn-logout:hover { background: rgba(252,91,91,0.2); }
+
+  /* SIDEBAR MAESTRO */
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;}
+  .logo{padding:22px 20px;border-bottom:1px solid var(--border);}
+  .logo h1{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--gold);}
+  .logo span{color:var(--muted);font-size:11px;display:block;margin-top:2px;}
+  
+  .nav{padding:14px 12px;flex:1;overflow-y:auto;}
+  .nav-section{margin-bottom:14px;}
+  .nav-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;padding:0 8px;margin-bottom:6px;}
+  
+  .nav-item{
+    display:flex; align-items:center; gap:10px; padding:11px 14px; border-radius:8px; 
+    cursor:pointer; font-size:13.5px; color:#0a0e1a; background: var(--gold); font-weight:700;
+    transition:all 0.2s ease; margin-bottom:6px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  .nav-item:hover{ background: var(--gold2); }
+  .nav-item.active{ background: #ffffff !important; color: #0a0e1a !important; font-weight: 800; box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3); }
+  .nav-item .icon{width:18px; text-align:center; font-size:15px;}
+
+  .recent-rates-box { margin: 10px 12px; padding: 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; }
+  .recent-rates-box h4 { font-size: 11px; color: var(--gold); text-transform: uppercase; margin-bottom: 8px; font-family: 'Syne'; letter-spacing: 0.5px;}
+  .recent-rates-list { font-size: 11.5px; color: var(--text); list-style: none; display: flex; flex-direction: column; gap: 5px;}
+  .recent-rates-list li { display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 3px;}
+  
+  .sidebar-footer{padding:12px 18px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);}
+  
+  /* MAIN CONTENT */
+  .main{margin-left:260px;padding:26px 30px;min-height:100vh;}
+  .page{display:none;}.page.active{display:block;}
+  .page-header{margin-bottom:24px;}
+  .page-header h2{font-family:'Syne',sans-serif;font-size:25px;font-weight:700;}
+  .page-header p{color:var(--muted);font-size:13px;margin-top:4px;}
+  
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;}
+  .stat-card .si{font-size:22px;margin-bottom:8px;}
+  .stat-card .sv{font-size:24px;font-weight:700;font-family:'Syne',sans-serif;}
+  .stat-card .sl{font-size:12px;color:var(--muted);margin-top:2px;}
+  
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:18px;padding:20px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;padding:12px;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;border-bottom:1px solid var(--border);}
+  td{padding:12px;border-bottom:1px solid rgba(31,45,69,0.5);vertical-align:middle;}
+  
+  .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block; text-transform: uppercase;}
+  .badge-procesando { background: rgba(250,204,21,0.15); color: var(--warning); border: 1px solid rgba(250,204,21,0.3); }
+  .badge-procesada { background: rgba(74,222,128,0.15); color: var(--success); border: 1px solid rgba(74,222,128,0.3); }
+  .badge-cancelada { background: rgba(252,91,91,0.15); color: var(--danger); border: 1px solid rgba(252,91,91,0.3); }
+
+  .btn {padding:9px 16px;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-p{background:var(--gold);color:#0a0e1a;}.btn-p:hover{background:var(--gold2);}
+  .btn-g{background:transparent;color:var(--muted);border:1px solid var(--border);}.btn-g:hover{border-color:var(--gold);color:var(--gold);}
+  .btn-sm{padding:5px 8px; font-size:11px; border-radius:4px; font-weight: bold;}
+  .btn-success{background: var(--success); color: #0a0e1a;}
+  .btn-danger{background: var(--danger); color: #ffffff;}
+  
+  .form-grid{display:grid;gap:14px;}.fg2{grid-template-columns:1fr 1fr;}
+  .field label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px;}
+  .field input,.field select,.field textarea{width:100%;padding:10px 12px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;}
+  .field input:focus,.field select:focus{border-color:var(--gold);}
+  .field input[readonly]{background:rgba(245,200,66,0.05);border-color:rgba(245,200,66,0.2);color:var(--gold);font-weight:700;}
+  .field input.bloqueado-vendedor { background:#1f293d; border-color:#2e3f5e; color:#9ca3af; cursor:not-allowed; }
+
+  .monto-wrap{position:relative;}
+  .monto-prefix{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--gold);font-weight:700;font-size:14px;}
+  .monto-wrap input{padding-left:32px;}
+  
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px;width:600px;max-width:96vw;overflow-y:auto;max-height:90vh;}
+  .modal h3{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:18px;}
+  .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+  .search-box{position:relative;width:270px;}
+  .search-box input{width:100%;padding:8px 12px 8px 34px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);}
+
+  #notification-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; max-width: 350px; }
+  .toast-notification { background: var(--surface2); border-left: 4px solid var(--gold); border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); color: var(--text); padding: 15px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); font-size: 13px; animation: slideIn 0.3s ease forwards; }
+  @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  @media(max-width:900px){
+    .sidebar{width:68px;}.nav-item span,.logo h1,.logo span,.nav-label,.sidebar-footer,.recent-rates-box{display:none;}
+    .main{margin-left:68px;padding:14px;}.session-navbar{margin-left:68px;}
+    .stats-grid,.fg2{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+  <div id="notification-container"></div>
+
+  <!-- CONTROL DE ACCESO -->
+  <div id="login-container" class="login-wrapper">
+    <div class="login-card">
+      <div class="logo">
+        <h1>🛡️ JDA TRADEX</h1>
+        <span>Módulo de Entrada</span>
+      </div>
+      <form id="login-form" onsubmit="validarAccesoGlobal(event)">
+        <div class="field">
+          <label>Usuario Autorizado</label>
+          <input type="text" id="username" placeholder="admin / daniel / vendedor" required>
+        </div>
+        <div class="field">
+          <label>Contraseña de Red</label>
+          <input type="password" id="password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-p" style="width:100%; justify-content:center; padding:12px; margin-top:10px;">Autenticar Operador ⚡</button>
+        <div id="error-msg">❌ Credenciales inválidas para este nodo de red.</div>
+      </form>
+    </div>
+  </div>
+
+  <!-- APP PRINCIPAL -->
+  <div id="app-container">
+    
+    <div class="session-navbar">
+      <div class="session-user-info">
+        <span>🌐 Operador Conectado: <strong id="session-user-display">—</strong> | Rango: <span id="session-role-badge" style="color:var(--gold); font-weight:bold;">—</span></span>
+      </div>
+      <button class="btn-logout" onclick="ejecutarCerrarSesionGlobal()">Cerrar Sesión 🔄</button>
+    </div>
+
+    <nav class="sidebar">
+      <div class="logo">
+        <h1>💸 JDA TRADEX</h1>
+        <span>Módulo de Control</span>
+      </div>
+      <div class="nav">
+        <div class="nav-section">
+          <div class="nav-label">Principal</div>
+          <div class="nav-item active" onclick="goto('dashboard', this)"><span class="icon">📊</span><span>Dashboard</span></div>
+          <div class="nav-item" onclick="goto('remesas', this)"><span class="icon">💸</span><span>Remesas</span></div>
+          <div class="nav-item" onclick="goto('clientes', this)"><span class="icon">👥</span><span>Clientes</span></div>
+        </div>
+        <div class="nav-section" id="nav-section-admin-finanzas">
+          <div class="nav-label">Finanzas Admin</div>
+          <div class="nav-item" onclick="goto('caja', this)"><span class="icon">🗄️</span><span>Arqueo de Caja</span></div>
+          <div class="nav-item" onclick="goto('prestamos', this)"><span class="icon">💳</span><span>Préstamos</span></div>
+          <div class="nav-item" onclick="goto('bancos', this)"><span class="icon">🏦</span><span>Bancos</span></div>
+        </div>
+        <div class="nav-section" id="nav-section-admin-config">
+          <div class="nav-label">Ajustes Admin</div>
+          <div class="nav-item" onclick="goto('config', this)"><span class="icon">⚙️</span><span>Configurar Tasas</span></div>
+        </div>
+      </div>
+
+      <div class="recent-rates-box">
+        <h4>📈 Últimas Tasas (Cliente)</h4>
+        <ul class="recent-rates-list">
+          <li><span>USDT ➔ VES</span><strong id="side-rate-usdt">Bs. 46.20</strong></li>
+          <li><span>USA ➔ VE</span><strong id="side-rate-usa">Bs. 42.77</strong></li>
+          <li><span>BR ➔ VE (Real)</span><strong id="side-rate-br">Bs. 7.61</strong></li>
+        </ul>
+      </div>
+      <div class="sidebar-footer"><small>v5.2 · JDA TRADEX</small></div>
+    </nav>
+
+    <main class="main">
+      
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header"><h2>Dashboard Operativo</h2><p>Métricas de transacciones · <span id="today-date"></span></p></div>
+        <div class="stats-grid">
+          <div class="stat-card" style="border-top:3px solid var(--gold);"><div class="si">📅</div><div class="sv" id="dash-hoy-val">0</div><div class="sl">Órdenes Activas</div></div>
+          <div class="stat-card" style="border-top:3px solid var(--success);"><div class="si">📊</div><div class="sv" id="dash-mes-val">0</div><div class="sl">Órdenes Completadas</div></div>
+          <div class="stat-card" style="border-top:3px solid var(--blue);"><div class="si">🪙</div><div class="sv" id="dash-usdt-static">Bs. 46.20</div><div class="sl">USDT Oficial</div></div>
+          <div class="stat-card" style="border-top:3px solid var(--teal);"><div class="si">👥</div><div class="sv" id="dash-clientes-val">0</div><div class="sl">Clientes Registrados</div></div>
+        </div>
+      </div>
+
+      <!-- REMESAS -->
+      <div class="page" id="page-remesas">
+        <div class="page-header"><h2>💸 Libro de Remesas</h2><p>Historial unificado de operaciones registradas</p></div>
+        <div class="topbar">
+          <div class="search-box"><input placeholder="Buscar en historial..."></div>
+          <button class="btn btn-p" onclick="abrirModalRemesa()">+ Nueva Remesa</button>
+        </div>
+        <div class="card" style="padding:0;">
+          <table>
+            <thead><tr><th>ID / Hora</th><th>Destino</th><th>Monto Base</th><th>Neto Líquido</th><th>Cliente</th><th>Estado</th><th id="th-acciones-admin">Acciones Admin</th></tr></thead>
+            <tbody id="remesas-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CLIENTES -->
+      <div class="page" id="page-clientes">
+        <div class="page-header"><h2>👥 Base de Clientes</h2><p>Registro único de remitentes y deudores</p></div>
+        <div class="topbar">
+          <div class="search-box"><input placeholder="Filtrar por nombre..."></div>
+          <button class="btn btn-p" onclick="openModal('modal-cliente')">+ Nuevo Cliente</button>
+        </div>
+        <div class="card" style="padding:0;">
+          <table>
+            <thead><tr><th>Nombre Completo</th><th>Cédula / ID</th><th>Teléfono</th><th>País</th><th>Banco Frecuente</th></tr></thead>
+            <tbody id="clientes-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ARQUEO DE CAJA -->
+      <div class="page" id="page-caja">
+        <div class="page-header"><h2>🗄️ Arqueo de Caja Diario</h2><p>Exclusivo de rango Administrativo</p></div>
+        <div class="card" style="max-width:500px;">
+          <div class="field"><label>Monto de Apertura en Banesco (Bs.)</label><input type="number" value="150000.00"></div>
+          <button class="btn btn-p" style="margin-top:12px; width:100%; justify-content:center;">Actualizar Fondos</button>
+        </div>
+      </div>
+
+      <!-- PRÉSTAMOS -->
+      <div class="page" id="page-prestamos">
+        <div class="page-header"><h2>💳 Módulo de Préstamos Financieros</h2><p>Financiamientos internos aprobados</p></div>
+        <div class="card" style="padding:0;">
+          <table>
+            <thead><tr><th>Cliente Deudor</th><th>Monto</th><th>Interés</th><th>Vencimiento</th><th>Acción</th></tr></thead>
+            <tbody><tr><td>Juan Pérez</td><td>$500.00</td><td>5%</td><td>2026-06-15</td><td><button class="btn btn-success btn-sm" onclick="alert('Abono registrado')">Abonar 💵</button></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- BANCOS -->
+      <div class="page" id="page-bancos">
+        <div class="page-header"><h2>🏦 Control de Bancos y Cuentas</h2><p>Monitoreo de capital de JDA TRADEX</p></div>
+        <div class="card" style="padding:0;">
+          <table>
+            <thead><tr><th>Plataforma</th><th>Identificador</th><th>Saldo</th></tr></thead>
+            <tbody>
+              <tr><td>Banesco</td><td>0134-XXXX-XX-XXXXXXXXXX</td><td>Bs. 120,450.00</td></tr>
+              <tr><td>Zelle (Chase)</td><td>pagos@jdatradex.com</td><td>$3,420.00</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CONFIGURACIÓN DE TASAS -->
+      <div class="page" id="page-config">
+        <div class="page-header"><h2>⚙️ Panel de Control de Tasas y Variables</h2><p>Configuración maestra para toda la plataforma</p></div>
+        
+        <div class="card" style="max-width: 750px; background: linear-gradient(135deg, var(--surface) 0%, #172237 100%); border: 1px solid var(--gold); margin-bottom: 18px;">
+          <h3 style="font-family:'Syne'; font-size:14px; margin-bottom:4px; color:var(--gold);">⚡ Asistente Inteligente: Cotizaciones de Mercado (USDT / USD)</h3>
+          
+          <div class="form-grid fg2" style="margin-bottom: 15px;">
+            <div class="field"><label>💵 Valor de 1 USDT en Venezuela (VES)</label><input type="number" id="calc-ref-usdt" step="0.01" value="46.20" oninput="autoCalcularEstructuraCompleta()"></div>
+            <div class="field"><label>🇺🇸 Precio del Dólar en Estados Unidos (USD)</label><input type="number" id="calc-ref-usa" step="0.01" value="1.00" oninput="autoCalcularEstructuraCompleta()"></div>
+            <div class="field"><label>🇧🇷 Precio del Dólar en Brasil (BRL)</label><input type="number" id="calc-ref-br" step="0.01" value="5.40" oninput="autoCalcularEstructuraCompleta()"></div>
+            <div class="field"><label>🇨🇴 Precio del Dólar en Colombia (COP)</label><input type="number" id="calc-ref-co" step="1" value="3950" oninput="autoCalcularEstructuraCompleta()"></div>
+            <div class="field"><label>🇪🇺 Precio del Dólar en España (EUR)</label><input type="number" id="calc-ref-es" step="0.01" value="0.92" oninput="autoCalcularEstructuraCompleta()"></div>
+            <div class="field"><label>🇩🇴 Precio del Dólar en Rep. Dominicana (DOP)</label><input type="number" id="calc-ref-do" step="0.01" value="58.50" oninput="autoCalcularEstructuraCompleta()"></div>
+          </div>
+        </div>
+
+        <div class="card" style="max-width: 750px;">
+          <h3 style="font-family:'Syne'; font-size:14px; margin-bottom:15px; color:var(--gold);">Variables JDA TRADEX y Spread Comercial</h3>
+          <div class="form-grid fg2" style="margin-bottom:20px;">
+            <div class="field"><label>🪙 Precio USDT Final (en VES)</label><input type="number" id="cfg-tasa-usdt" step="0.01" value="46.20"></div>
+            <div class="field"><label>📉 Descuento Total Aplicado al Cliente (%)</label><input type="number" id="cfg-ganancia-casa" step="0.1" value="6.0" oninput="recalcularTasasClientesDesdePorcentaje()"></div>
+          </div>
+
+          <h3 style="font-family:'Syne'; font-size:14px; margin-bottom:15px; color:var(--purple);">Cotizaciones de Servidor (Ingresos a Venezuela)</h3>
+          <div class="form-grid fg2" style="margin-bottom:20px;">
+            <div class="field"><label>🇺🇸 ➔ 🇻🇪 USA Real (USD → VES)</label><input type="number" id="cfg-tasa-usd" step="0.01" value="45.50"></div>
+            <div class="field"><label>🛍️ USA Cliente</label><input type="number" id="cfg-tasa-usd-cli" step="0.01" value="42.77"></div>
+            
+            <div class="field"><label>🇪🇸 ➔ 🇻🇪 España Real (EUR → VES)</label><input type="number" id="cfg-tasa-eur" step="0.01" value="48.20"></div>
+            <div class="field"><label>🛍️ España Cliente</label><input type="number" id="cfg-tasa-eur-cli" step="0.01" value="45.31"></div>
+            
+            <div class="field"><label>🇧🇷 ➔ 🇻🇪 Brasil Real (BRL → VES)</label><input type="number" id="cfg-tasa-brl-ve" step="0.01" value="8.10"></div>
+            <div class="field"><label>🛍️ Brasil Cliente</label><input type="number" id="cfg-tasa-brl-ve-cli" step="0.01" value="7.61"></div>
+
+            <div class="field"><label>🇵🇪 ➔ 🇻🇪 Perú Real (PEN → VES)</label><input type="number" id="cfg-tasa-pen" step="0.01" value="12.30"></div>
+            <div class="field"><label>🛍️ Perú Cliente</label><input type="number" id="cfg-tasa-pen-cli" step="0.01" value="11.56"></div>
+
+            <div class="field"><label>🇨🇴 ➔ 🇻🇪 Colombia Real (COP → VES)</label><input type="number" id="cfg-tasa-co-ve" step="0.0001" value="0.0115"></div>
+            <div class="field"><label>🛍️ Colombia Cliente</label><input type="number" id="cfg-tasa-co-ve-cli" step="0.0001" value="0.0108"></div>
+
+            <div class="field"><label>🇩🇴 ➔ 🇻🇪 Dominicana Real (DOP → VES)</label><input type="number" id="cfg-tasa-do-ve" step="0.01" value="0.78"></div>
+            <div class="field"><label>🛍️ Dominicana Cliente</label><input type="number" id="cfg-tasa-do-ve-cli" step="0.01" value="0.73"></div>
+          </div>
+
+          <h3 style="font-family:'Syne'; font-size:14px; margin-bottom:15px; color:var(--teal);">Cotizaciones de Servidor (Salidas desde Venezuela)</h3>
+          <div class="form-grid fg2">
+            <div class="field"><label>🇻🇪 ➔ 🇧🇷 Brasil Real (VES → BRL)</label><input type="number" id="cfg-tasa-ve-brl" step="0.01" value="0.12"></div>
+            <div class="field"><label>🛍️ Brasil Cliente (Salida)</label><input type="number" id="cfg-tasa-ve-brl-cli" step="0.01" value="0.13"></div>
+
+            <div class="field"><label>🇻🇪 ➔ 🇺🇸 USA Real (VES → USD)</label><input type="number" id="cfg-tasa-ve-usd" step="0.01" value="0.022"></div>
+            <div class="field"><label>🛍️ USA Cliente (Salida)</label><input type="number" id="cfg-tasa-ve-usd-cli" step="0.01" value="0.024"></div>
+
+            <div class="field"><label>🇻🇪 ➔ 🇪🇸 España Real (VES → EUR)</label><input type="number" id="cfg-tasa-ve-eur" step="0.01" value="0.020"></div>
+            <div class="field"><label>🛍️ España Cliente (Salida)</label><input type="number" id="cfg-tasa-ve-eur-cli" step="0.01" value="0.022"></div>
+
+            <div class="field"><label>🇻🇪 ➔ 🇨🇴 Colombia Real (VES → COP)</label><input type="number" id="cfg-tasa-ve-cop" step="0.1" value="85.50"></div>
+            <div class="field"><label>🛍️ Colombia Cliente (Salida)</label><input type="number" id="cfg-tasa-ve-cop-cli" step="0.1" value="90.60"></div>
+
+            <div class="field"><label>🇻🇪 ➔ 🇵🇪 Perú Real (VES → PEN)</label><input type="number" id="cfg-tasa-ve-pen" step="0.01" value="0.081"></div>
+            <div class="field"><label>🛍️ Perú Cliente (Salida)</label><input type="number" id="cfg-tasa-ve-pen-cli" step="0.01" value="0.086"></div>
+
+            <div class="field"><label>🇻🇪 ➔ 🇩🇴 Dominicana Real (VES → DOP)</label><input type="number" id="cfg-tasa-ve-dop" step="0.01" value="1.26"></div>
+            <div class="field"><label>🛍️ Dominicana Cliente (Salida)</label><input type="number" id="cfg-tasa-ve-dop-cli" step="0.01" value="1.34"></div>
+          </div>
+          
+          <button class="btn btn-p" onclick="guardarConfigTasas()" style="margin-top:20px; width:100%; justify-content:center;">💾 Aplicar Cotizaciones de Red</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- MODAL: REMESAS MULTIDIRECCIONALES -->
+  <div class="modal-overlay" id="modal-remesa">
+    <div class="modal">
+      <h3>💸 Emitir Orden Transnacional</h3>
+      <div class="form-grid fg2">
+        <div class="field" style="grid-column: span 2;"><label>Trayecto o Sentido del Intercambio</label>
+          <select id="rm-trayecto" onchange="onTrayectoChange()">
+            <!-- INGRESOS A VENEZUELA -->
+            <option value="USA_VE">🇺🇸 ➔ 🇻🇪 USA a Venezuela (USD)</option>
+            <option value="EUR_VE">🇪🇸 ➔ 🇻🇪 España a Venezuela (EUR)</option>
+            <option value="BRL_VE">🇧🇷 ➔ 🇻🇪 Brasil a Venezuela (BRL)</option>
+            <option value="PEN_VE">🇵🇪 ➔ 🇻🇪 Perú a Venezuela (PEN)</option>
+            <option value="COP_VE">🇨🇴 ➔ 🇻🇪 Colombia a Venezuela (COP)</option>
+            <option value="DOP_VE">🇩🇴 ➔ 🇻🇪 Dominicana a Venezuela (DOP)</option>
+            <!-- SALIDAS DESDE VENEZUELA -->
+            <option value="VE_BRL">🇻🇪 ➔ 🇧🇷 Venezuela a Brasil (BRL)</option>
+            <option value="VE_USA">🇻🇪 ➔ 🇺🇸 Venezuela a USA (USD)</option>
+            <option value="VE_EUR">🇻🇪 ➔ 🇪🇸 Venezuela a España (EUR)</option>
+            <option value="VE_COP">🇻🇪 ➔ 🇨🇴 Venezuela a Colombia (COP)</option>
+            <option value="VE_PEN">🇻🇪 ➔ 🇵🇪 Venezuela a Perú (PEN)</option>
+            <option value="VE_DOP">🇻🇪 ➔ 🇩🇴 Venezuela a Dominicana (DOP)</option>
+          </select>
+        </div>
+        <div class="field"><label>Monto Base Enviado</label>
+          <div class="monto-wrap"><span class="monto-prefix" id="rm-sym">$</span><input type="number" id="rm-monto" placeholder="0.00" oninput="calcRemesa()"></div>
+        </div>
+
+        <div class="field"><label>📈 Tasa Real del Mercado</label><input type="number" id="rm-tasa-real" readonly style="background: rgba(255,255,255,0.05); color: var(--muted);"></div>
+        <div class="field"><label>🛍️ Tasa Aplicada al Cliente</label><input type="number" id="rm-tasa" step="0.0001" oninput="calcRemesa()"></div>
+        
+        <div class="field"><label>🪙 Spread Total Recaudado (USDT)</label><input type="text" id="rm-usdt-ref" readonly style="background: rgba(59, 130, 246, 0.08); border-color: rgba(59, 130, 246, 0.3); color: #60a5fa; font-weight: bold;"></div>
+        <div class="field"><label>Descuento Comercial (%)</label><input type="number" id="rm-comision-porc" readonly></div>
+        
+        <!-- CORRECCIÓN DE FÓRMULA SOLICITADA POR DANIEL: SPREAD TOTAL EN USDT MENOS EL 3% DEL VENDEDOR -->
+        <div class="field" style="grid-column: span 2;"><label>🛡️ Monto Neto a Enviar al Administrador (Spread Total menos 3% del Vendedor)</label><input type="text" id="rm-usdt-admin" readonly style="background: rgba(168, 85, 247, 0.12); border-color: rgba(168, 85, 247, 0.4); color: #c084fc; font-weight: 800; font-size:14px; text-align:center;"></div>
+        
+        <div class="field" style="grid-column: span 2;"><label>Monto Neto Líquido a Entregar al Destinatario</label><input type="number" id="rm-neto" readonly style="font-size:16px; font-weight:bold; color:var(--success);"></div>
+        
+        <div class="field">
+          <label>Cliente Registrado</label>
+          <select id="rm-remitente"></select>
+        </div>
+        <div class="field"><label>Datos Destinatario (Cuenta / Pago Móvil / Pix / Alias)</label><input type="text" id="rm-dest" placeholder="Ingresar datos de liquidación segura"></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-g" onclick="closeModal('modal-remesa')">Cerrar</button><button class="btn btn-p" onclick="guardarRemesa()">⚡ Registrar Operación</button></div>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVO CLIENTE -->
+  <div class="modal-overlay" id="modal-cliente">
+    <div class="modal">
+      <h3>👥 Registrar Nuevo Cliente en Red</h3>
+      <div class="form-grid fg2">
+        <div class="field"><label>Nombre Completo</label><input type="text" id="cl-nombre" placeholder="Ej. Juan Pérez" required></div>
+        <div class="field"><label>Cédula / ID Nacional</label><input type="text" id="cl-cedula" placeholder="Ej. V-12345678" required></div>
+        <div class="field"><label>Teléfono de Contacto</label><input type="text" id="cl-telefono" placeholder="Ej. +58 412-1234567" required></div>
+        <div class="field"><label>País de Residencia</label><input type="text" id="cl-pais" placeholder="Ej. Venezuela / Brasil" required></div>
+        <div class="field"><label>Banco de Preferencia</label><input type="text" id="cl-banco" placeholder="Ej. Banesco / Pix" required></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-g" onclick="closeModal('modal-cliente')">Cancelar</button>
+        <button class="btn btn-p" onclick="guardarNuevoCliente()">💾 Archivar Cliente</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let variablesGlobales = {
+        usdt_ves: 46.20, ganancia_casa: 6.0,
+        usd_ve: 45.50, usd_ve_cli: 42.77,
+        eur_ve: 48.20, eur_ve_cli: 45.31,
+        brl_ve: 8.10, brl_ve_cli: 7.61,
+        pen_ve: 12.30, pen_ve_cli: 11.56,
+        co_ve: 0.0115, co_ve_cli: 0.0108,
+        do_ve: 0.78, do_ve_cli: 0.73,
+        d_usa: 1.00, d_br: 5.40, d_co: 3950, d_es: 0.92, d_do: 58.50,
+        // NUEVAS VARIABLES PARA SALIDA DESDE VENEZUELA
+        ve_brl: 0.12, ve_brl_cli: 0.13,
+        ve_usd: 0.022, ve_usd_cli: 0.024,
+        ve_eur: 0.020, ve_eur_cli: 0.022,
+        ve_cop: 85.50, ve_cop_cli: 90.60,
+        ve_pen: 0.081, ve_pen_cli: 0.086,
+        ve_dop: 1.26, ve_dop_cli: 1.34
+    };
+
+    let historialRemesas = [];
+    let listaClientes = [
+        { nombre: "Juan Pérez", cedula: "V-15.420.111", telefono: "+1 (555) 019-2834", pais: "Estados Unidos", banco: "Zelle Chase" },
+        { nombre: "María Da Silva", cedula: "E-84.333.212", telefono: "+55 (11) 98765-4321", pais: "Brasil", banco: "Pix" }
+    ];
+
+    window.onload = function() {
+        const sesionGuardada = localStorage.getItem("tradex_sesion_activa");
+        const rolGuardado = localStorage.getItem("tradex_rol_activo");
+        if(sesionGuardada && rolGuardado) { desplegarDashboard(sesionGuardada, rolGuardado); }
+        
+        const variablesLocales = localStorage.getItem("variables_tradex_v5.2");
+        if(variablesLocales) { variablesGlobales = JSON.parse(variablesLocales); }
+        
+        if(localStorage.getItem("historial_remesas_tradex")) { historialRemesas = JSON.parse(localStorage.getItem("historial_remesas_tradex")); }
+        if(localStorage.getItem("lista_clientes_tradex")) { listaClientes = JSON.parse(localStorage.getItem("lista_clientes_tradex")); }
+
+        cargarCamposConfig();
+        actualizarSidebarRates();
+        renderizarTablaRemesas();
+        renderizarTablaClientes();
+        sconizarSelectorClientesRemesa();
+    };
+
+    function validarAccesoGlobal(event) {
+        event.preventDefault();
+        const userIn = document.getElementById("username").value.trim().toLowerCase();
+        const passIn = document.getElementById("password").value;
+        let autenticado = false; let nombre = ""; let rol = "";
+
+        if ((userIn === "admin" && passIn === "jdaseguro2026") || (userIn === "daniel" && passIn === "tradex2026")) {
+            autenticado = true; nombre = "Daniel (Admin)"; rol = "Administrador";
+        } else if (userIn === "vendedor" && passIn === "vendedor2026") {
+            autenticado = true; nombre = "Operador Ventas"; rol = "Vendedor";
+        }
+
+        if (autenticado) {
+            localStorage.setItem("tradex_sesion_activa", nombre);
+            localStorage.setItem("tradex_rol_activo", rol);
+            desplegarDashboard(nombre, rol);
+        } else {
+            document.getElementById("error-msg").style.display = "block";
+        }
+    }
+
+    function desplegarDashboard(nombre, rol) {
+        document.getElementById("login-container").style.display = "none";
+        document.getElementById("app-container").style.display = "block";
+        document.getElementById("session-user-display").innerText = nombre;
+        document.getElementById("session-role-badge").innerText = rol;
+        document.getElementById('today-date').innerText = new Date().toLocaleDateString('es-VE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        const campoTasa = document.getElementById('rm-tasa');
+        const thAcciones = document.getElementById('th-acciones-admin');
+
+        if(rol === "Vendedor") {
+            document.getElementById("nav-section-admin-finanzas").style.display = "none";
+            document.getElementById("nav-section-admin-config").style.display = "none";
+            if(campoTasa) {
+                campoTasa.readOnly = true;
+                campoTasa.classList.add('bloqueado-vendedor');
+            }
+            if(thAcciones) thAcciones.style.display = "none";
+        } else {
+            document.getElementById("nav-section-admin-finanzas").style.display = "block";
+            document.getElementById("nav-section-admin-config").style.display = "block";
+            if(campoTasa) {
+                campoTasa.readOnly = false;
+                campoTasa.classList.remove('bloqueado-vendedor');
+            }
+            if(thAcciones) thAcciones.style.display = "table-cell";
+        }
+        
+        cargarCamposConfig();
+        actualizarSidebarRates();
+        renderizarTablaRemesas();
+        renderizarTablaClientes();
+        sconizarSelectorClientesRemesa();
+    }
+
+    function ejecutarCerrarSesionGlobal() {
+        localStorage.removeItem("tradex_sesion_activa");
+        localStorage.removeItem("tradex_rol_activo");
+        document.getElementById("app-container").style.display = "none";
+        document.getElementById("login-container").style.display = "flex";
+    }
+
+    function cargarCamposConfig() {
+        if(!document.getElementById('cfg-tasa-usdt')) return;
+        document.getElementById('cfg-tasa-usdt').value = variablesGlobales.usdt_ves;
+        document.getElementById('calc-ref-usdt').value = variablesGlobales.usdt_ves;
+        document.getElementById('cfg-ganancia-casa').value = variablesGlobales.ganancia_casa;
+        
+        // INGRESOS
+        document.getElementById('cfg-tasa-usd').value = variablesGlobales.usd_ve;
+        document.getElementById('cfg-tasa-usd-cli').value = variablesGlobales.usd_ve_cli;
+        document.getElementById('cfg-tasa-eur').value = variablesGlobales.eur_ve;
+        document.getElementById('cfg-tasa-eur-cli').value = variablesGlobales.eur_ve_cli;
+        document.getElementById('cfg-tasa-brl-ve').value = variablesGlobales.brl_ve;
+        document.getElementById('cfg-tasa-brl-ve-cli').value = variablesGlobales.brl_ve_cli;
+        document.getElementById('cfg-tasa-pen').value = variablesGlobales.pen_ve;
+        document.getElementById('cfg-tasa-pen-cli').value = variablesGlobales.pen_ve_cli;
+        document.getElementById('cfg-tasa-co-ve').value = variablesGlobales.co_ve;
+        document.getElementById('cfg-tasa-co-ve-cli').value = variablesGlobales.co_ve_cli;
+        document.getElementById('cfg-tasa-do-ve').value = variablesGlobales.do_ve;
+        document.getElementById('cfg-tasa-do-ve-cli').value = variablesGlobales.do_ve_cli;
+
+        // SALIDAS
+        document.getElementById('cfg-tasa-ve-brl').value = variablesGlobales.ve_brl;
+        document.getElementById('cfg-tasa-ve-brl-cli').value = variablesGlobales.ve_brl_cli;
+        document.getElementById('cfg-tasa-ve-usd').value = variablesGlobales.ve_usd;
+        document.getElementById('cfg-tasa-ve-usd-cli').value = variablesGlobales.ve_usd_cli;
+        document.getElementById('cfg-tasa-ve-eur').value = variablesGlobales.ve_eur;
+        document.getElementById('cfg-tasa-ve-eur-cli').value = variablesGlobales.ve_eur_cli;
+        document.getElementById('cfg-tasa-ve-cop').value = variablesGlobales.ve_cop;
+        document.getElementById('cfg-tasa-ve-cop-cli').value = variablesGlobales.ve_cop_cli;
+        document.getElementById('cfg-tasa-ve-pen').value = variablesGlobales.ve_pen;
+        document.getElementById('cfg-tasa-ve-pen-cli').value = variablesGlobales.ve_pen_cli;
+        document.getElementById('cfg-tasa-ve-dop').value = variablesGlobales.ve_dop;
+        document.getElementById('cfg-tasa-ve-dop-cli').value = variablesGlobales.ve_dop_cli;
+    }
+
+    function guardarConfigTasas() {
+        variablesGlobales.usdt_ves = parseFloat(document.getElementById('cfg-tasa-usdt').value) || 46.20;
+        variablesGlobales.ganancia_casa = parseFloat(document.getElementById('cfg-ganancia-casa').value) || 6.0;
+        
+        // RECAUDAR INGRESOS
+        variablesGlobales.usd_ve = parseFloat(document.getElementById('cfg-tasa-usd').value);
+        variablesGlobales.usd_ve_cli = parseFloat(document.getElementById('cfg-tasa-usd-cli').value);
+        variablesGlobales.eur_ve = parseFloat(document.getElementById('cfg-tasa-eur').value);
+        variablesGlobales.eur_ve_cli = parseFloat(document.getElementById('cfg-tasa-eur-cli').value);
+        variablesGlobales.brl_ve = parseFloat(document.getElementById('cfg-tasa-brl-ve').value);
+        variablesGlobales.brl_ve_cli = parseFloat(document.getElementById('cfg-tasa-brl-ve-cli').value);
+        variablesGlobales.pen_ve = parseFloat(document.getElementById('cfg-tasa-pen').value);
+        variablesGlobales.pen_ve_cli = parseFloat(document.getElementById('cfg-tasa-pen-cli').value);
+        variablesGlobales.co_ve = parseFloat(document.getElementById('cfg-tasa-co-ve').value);
+        variablesGlobales.co_ve_cli = parseFloat(document.getElementById('cfg-tasa-co-ve-cli').value);
+        variablesGlobales.do_ve = parseFloat(document.getElementById('cfg-tasa-do-ve').value);
+        variablesGlobales.do_ve_cli = parseFloat(document.getElementById('cfg-tasa-do-ve-cli').value);
+
+        // RECAUDAR SALIDAS
+        variablesGlobales.ve_brl = parseFloat(document.getElementById('cfg-tasa-ve-brl').value);
+        variablesGlobales.ve_brl_cli = parseFloat(document.getElementById('cfg-tasa-ve-brl-cli').value);
+        variablesGlobales.ve_usd = parseFloat(document.getElementById('cfg-tasa-ve-usd').value);
+        variablesGlobales.ve_usd_cli = parseFloat(document.getElementById('cfg-tasa-ve-usd-cli').value);
+        variablesGlobales.ve_eur = parseFloat(document.getElementById('cfg-tasa-ve-eur').value);
+        variablesGlobales.ve_eur_cli = parseFloat(document.getElementById('cfg-tasa-ve-eur-cli').value);
+        variablesGlobales.ve_cop = parseFloat(document.getElementById('cfg-tasa-ve-cop').value);
+        variablesGlobales.ve_cop_cli = parseFloat(document.getElementById('cfg-tasa-ve-cop-cli').value);
+        variablesGlobales.ve_pen = parseFloat(document.getElementById('cfg-tasa-ve-pen').value);
+        variablesGlobales.ve_pen_cli = parseFloat(document.getElementById('cfg-tasa-ve-pen-cli').value);
+        variablesGlobales.ve_dop = parseFloat(document.getElementById('cfg-tasa-ve-dop').value);
+        variablesGlobales.ve_dop_cli = parseFloat(document.getElementById('cfg-tasa-ve-dop-cli').value);
+
+        localStorage.setItem("variables_tradex_v5.2", JSON.stringify(variablesGlobales));
+        pushNotification("⚙️ Configuración del Servidor Guardada Correctamente.");
+        actualizarSidebarRates();
+    }
+
+    function autoCalcularEstructuraCompleta() {
+        const refUsdt = parseFloat(document.getElementById('calc-ref-usdt').value) || 46.20;
+        const gc = parseFloat(document.getElementById('cfg-ganancia-casa').value) || 6.0;
+        const f = (100 - gc) / 100;
+
+        document.getElementById('cfg-tasa-usdt').value = refUsdt.toFixed(2);
+        
+        // Auto-cálculo para Ingresos (Hacia Venezuela)
+        const refUsa = parseFloat(document.getElementById('calc-ref-usa').value) || 1.00;
+        const usd_ve_real = refUsdt / refUsa;
+        document.getElementById('cfg-tasa-usd').value = usd_ve_real.toFixed(2);
+        document.getElementById('cfg-tasa-usd-cli').value = (usd_ve_real * f).toFixed(2);
+
+        const refBr = parseFloat(document.getElementById('calc-ref-br').value) || 5.40;
+        const brl_ve_real = refUsdt / refBr;
+        document.getElementById('cfg-tasa-brl-ve').value = brl_ve_real.toFixed(2);
+        document.getElementById('cfg-tasa-brl-ve-cli').value = (brl_ve_real * f).toFixed(2);
+
+        const refEs = parseFloat(document.getElementById('calc-ref-es').value) || 0.92;
+        const eur_ve_real = refUsdt / refEs;
+        document.getElementById('cfg-tasa-eur').value = eur_ve_real.toFixed(2);
+        document.getElementById('cfg-tasa-eur-cli').value = (eur_ve_real * f).toFixed(2);
+
+        const refCo = parseFloat(document.getElementById('calc-ref-co').value) || 3950;
+        const co_ve_real = refUsdt / refCo;
+        document.getElementById('cfg-tasa-co-ve').value = co_ve_real.toFixed(5);
+        document.getElementById('cfg-tasa-co-ve-cli').value = (co_ve_real * f).toFixed(5);
+
+        const refDo = parseFloat(document.getElementById('calc-ref-do').value) || 58.50;
+        const do_ve_real = refUsdt / refDo;
+        document.getElementById('cfg-tasa-do-ve').value = do_ve_real.toFixed(2);
+        document.getElementById('cfg-tasa-do-ve-cli').value = (do_ve_real * f).toFixed(2);
+    }
+
+    function recalcularTasasClientesDesdePorcentaje() {
+        const gc = parseFloat(document.getElementById('cfg-ganancia-casa').value) || 0;
+        const f = (100 - gc) / 100;
+        const fSalida = (100 + gc) / 100; // Penalización/spread inverso para salidas
+
+        // Ingresos
+        if(document.getElementById('cfg-tasa-usd').value) document.getElementById('cfg-tasa-usd-cli').value = (parseFloat(document.getElementById('cfg-tasa-usd').value)*f).toFixed(2);
+        if(document.getElementById('cfg-tasa-eur').value) document.getElementById('cfg-tasa-eur-cli').value = (parseFloat(document.getElementById('cfg-tasa-eur').value)*f).toFixed(2);
+        if(document.getElementById('cfg-tasa-brl-ve').value) document.getElementById('cfg-tasa-brl-ve-cli').value = (parseFloat(document.getElementById('cfg-tasa-brl-ve').value)*f).toFixed(2);
+        if(document.getElementById('cfg-tasa-co-ve').value) document.getElementById('cfg-tasa-co-ve-cli').value = (parseFloat(document.getElementById('cfg-tasa-co-ve').value)*f).toFixed(5);
+        
+        // Salidas
+        if(document.getElementById('cfg-tasa-ve-brl').value) document.getElementById('cfg-tasa-ve-brl-cli').value = (parseFloat(document.getElementById('cfg-tasa-ve-brl').value)*fSalida).toFixed(3);
+        if(document.getElementById('cfg-tasa-ve-usd').value) document.getElementById('cfg-tasa-ve-usd-cli').value = (parseFloat(document.getElementById('cfg-tasa-ve-usd').value)*fSalida).toFixed(3);
+    }
+
+    function actualizarSidebarRates() {
+        if(document.getElementById('side-rate-usdt')) document.getElementById('side-rate-usdt').innerText = "Bs. " + variablesGlobales.usdt_ves.toFixed(2);
+        if(document.getElementById('side-rate-usa')) document.getElementById('side-rate-usa').innerText = "Bs. " + variablesGlobales.usd_ve_cli.toFixed(2);
+        if(document.getElementById('side-rate-br')) document.getElementById('side-rate-br').innerText = "Bs. " + variablesGlobales.brl_ve_cli.toFixed(2);
+        if(document.getElementById('dash-usdt-static')) document.getElementById('dash-usdt-static').innerText = "Bs. " + variablesGlobales.usdt_ves.toFixed(2);
+    }
+
+    function goto(pageId, element) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active');
+        element.classList.add('active');
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    function abrirModalRemesa() {
+        sconizarSelectorClientesRemesa();
+        onTrayectoChange();
+        openModal('modal-remesa');
+    }
+
+    function onTrayectoChange() {
+        const trayecto = document.getElementById('rm-trayecto').value;
+        let sym = "$"; let tr = 0; let tc = 0;
+
+        switch(trayecto) {
+            case "USA_VE": sym = "$"; tr = variablesGlobales.usd_ve; tc = variablesGlobales.usd_ve_cli; break;
+            case "EUR_VE": sym = "€"; tr = variablesGlobales.eur_ve; tc = variablesGlobales.eur_ve_cli; break;
+            case "BRL_VE": sym = "R$"; tr = variablesGlobales.brl_ve; tc = variablesGlobales.brl_ve_cli; break;
+            case "PEN_VE": sym = "S/"; tr = variablesGlobales.pen_ve; tc = variablesGlobales.pen_ve_cli; break;
+            case "COP_VE": sym = "Col$"; tr = variablesGlobales.co_ve; tc = variablesGlobales.co_ve_cli; break;
+            case "DOP_VE": sym = "RD$"; tr = variablesGlobales.do_ve; tc = variablesGlobales.do_ve_cli; break;
+            // CASOS DE SALIDA DESDE VENEZUELA
+            case "VE_BRL": sym = "Bs"; tr = variablesGlobales.ve_brl; tc = variablesGlobales.ve_brl_cli; break;
+            case "VE_USA": sym = "Bs"; tr = variablesGlobales.ve_usd; tc = variablesGlobales.ve_usd_cli; break;
+            case "VE_EUR": sym = "Bs"; tr = variablesGlobales.ve_eur; tc = variablesGlobales.ve_eur_cli; break;
+            case "VE_COP": sym = "Bs"; tr = variablesGlobales.ve_cop; tc = variablesGlobales.ve_cop_cli; break;
+            case "VE_PEN": sym = "Bs"; tr = variablesGlobales.ve_pen; tc = variablesGlobales.ve_pen_cli; break;
+            case "VE_DOP": sym = "Bs"; tr = variablesGlobales.ve_dop; tc = variablesGlobales.ve_dop_cli; break;
+        }
+
+        document.getElementById('rm-sym').innerText = sym;
+        document.getElementById('rm-tasa-real').value = tr;
+        document.getElementById('rm-tasa').value = tc;
+        
+        document.getElementById('rm-comision-porc').value = variablesGlobales.ganancia_casa.toFixed(1);
+        calcRemesa();
+    }
+
+    function calcRemesa() {
+        const monto = parseFloat(document.getElementById('rm-monto').value) || 0;
+        const tasaReal = parseFloat(document.getElementById('rm-tasa-real').value) || 0;
+        const tasaCli = parseFloat(document.getElementById('rm-tasa').value) || 0;
+        const trayecto = document.getElementById('rm-trayecto').value;
+        const usdtVes = variablesGlobales.usdt_ves || 46.20;
+
+        let liquidacion = 0;
+        let spreadUSDT = 0;
+
+        if(monto <= 0) {
+            document.getElementById('rm-neto').value = 0;
+            document.getElementById('rm-usdt-ref').value = "0.00 USDT";
+            document.getElementById('rm-usdt-admin').value = "0.00 USDT";
+            return;
+        }
+
+        if (trayecto.endsWith("_VE")) {
+            // INGRESO A VENEZUELA: Se reciben divisas externas, se entregan Bolívares (VES)
+            liquidacion = monto * tasaCli;
+            
+            // Spread en Bolívares = Monto * (Tasa Real - Tasa Cliente)
+            let spreadVES = monto * (tasaReal - tasaCli);
+            spreadUSDT = spreadVES / usdtVes;
+        } else {
+            // SALIDA DESDE VENEZUELA: Se reciben Bolívares, se entregan divisas extranjeras afuera
+            liquidacion = monto * tasaCli;
+            
+            // Spread en divisa extranjera = Monto * (Tasa Cliente - Tasa Real)
+            let spreadDivisa = monto * (tasaCli - tasaReal);
+            
+            // Convertir esa divisa a USDT usando su equivalencia cruzada con VES
+            let equivalenciaVES = spreadDivisa * usdtVes; 
+            spreadUSDT = spreadDivisa / tasaReal; 
+            
+            // Corrección por si el trayecto es multiplicador (como COP o DOP)
+            if(trayecto === "VE_COP" || trayecto === "VE_DOP") {
+                spreadUSDT = spreadDivisa / (usdtVes * tasaReal);
+            }
+        }
+
+        // CONTROL DE ERRORES MENORES POR DEFECTOS DE CONFIGURACIÓN
+        if(spreadUSDT < 0) spreadUSDT = 0;
+
+        // FÓRMULA SOLICITADA POR DANIEL: Al spread total en USDT se le resta el 3% de comisión del vendedor
+        let usdtParaAdmin = spreadUSDT * 0.97;
+
+        document.getElementById('rm-neto').value = liquidacion.toFixed(2);
+        document.getElementById('rm-usdt-ref').value = spreadUSDT.toFixed(2) + " USDT";
+        document.getElementById('rm-usdt-admin').value = usdtParaAdmin.toFixed(2) + " USDT";
+    }
+
+    function guardarRemesa() {
+        const trayecto = document.getElementById('rm-trayecto').value;
+        const monto = parseFloat(document.getElementById('rm-monto').value) || 0;
+        const neto = parseFloat(document.getElementById('rm-neto').value) || 0;
+        const remitente = document.getElementById('rm-remitente').value;
+        const destinoInfo = document.getElementById('rm-dest').value.trim();
+        const usdtAdmin = document.getElementById('rm-usdt-admin').value;
+
+        if(monto <= 0 || !destinoInfo) {
+            alert("Por favor rellene los campos de montos y cuentas de destino de manera correcta.");
+            return;
+        }
+
+        const nuevaOrden = {
+            id: "TRX-" + Math.floor(1000 + Math.random() * 9000),
+            hora: new Date().toLocaleTimeString('es-VE', {hour: '2-digit', minute:'2-digit'}),
+            trayecto: trayecto,
+            monto: monto,
+            neto: neto,
+            cliente: remitente,
+            destino: destinoInfo,
+            usdtAdmin: usdtAdmin,
+            estado: "Procesando"
+        };
+
+        historialRemesas.unshift(nuevaOrden);
+        localStorage.setItem("historial_remesas_tradex", JSON.stringify(historialRemesas));
+        
+        closeModal('modal-remesa');
+        pushNotification("✨ Operación de Remesa registrada con éxito.");
+        renderizarTablaRemesas();
+    }
+
+    function renderizarTablaRemesas() {
+        const tbody = document.getElementById('remesas-tbody');
+        if(!tbody) return;
+        tbody.innerHTML = "";
+
+        let activas = 0; let completadas = 0;
+        const rolActivo = localStorage.getItem("tradex_rol_activo");
+
+        historialRemesas.forEach((r, index) => {
+            if(r.estado === "Procesando") activas++;
+            if(r.estado === "Procesada") completadas++;
+
+            let row = document.createElement('tr');
+            row.innerHTML = `
+                <td><strong>${r.id}</strong><br><small style="color:var(--muted);">${r.hora}</small></td>
+                <td><span style="font-weight:600; color:var(--gold);">${r.trayecto}</span><br><small style="color:var(--muted); font-size:11px;">${r.destino}</small></td>
+                <td>${r.monto.toFixed(2)}</td>
+                <td><span style="color:var(--success); font-weight:bold;">${r.neto.toFixed(2)}</span><br><small style="color:var(--purple);">Admin: ${r.usdtAdmin}</small></td>
+                <td>${r.cliente}</td>
+                <td><span class="badge badge-${r.estado.toLowerCase()}">${r.estado}</span></td>
+                <td class="td-acciones-celda">
+                    <button class="btn btn-success btn-sm" onclick="cambiarEstadoRemesa(${index}, 'Procesada')">✓</button>
+                    <button class="btn btn-danger btn-sm" onclick="cambiarEstadoRemesa(${index}, 'Cancelada')">✕</button>
+                </td>
+            `;
+            
+            if(rolActivo === "Vendedor") {
+                const celdaAccion = row.querySelector('.td-acciones-celda');
+                if(celdaAccion) celdaAccion.style.display = "none";
+            }
+            tbody.appendChild(row);
+        });
+
+        document.getElementById('dash-hoy-val').innerText = activas;
+        document.getElementById('dash-mes-val').innerText = completadas;
+    }
+
+    function cambiarEstadoRemesa(index, nuevoEstado) {
+        historialRemesas[index].estado = nuevoEstado;
+        localStorage.setItem("historial_remesas_tradex", JSON.stringify(historialRemesas));
+        renderizarTablaRemesas();
+        pushNotification(`⚡ Orden actualizada a estado: ${nuevoEstado}`);
+    }
+
+    function guardarNuevoCliente() {
+        const nom = document.getElementById('cl-nombre').value.trim();
+        const ced = document.getElementById('cl-cedula').value.trim();
+        const tel = document.getElementById('cl-telefono').value.trim();
+        const pais = document.getElementById('cl-pais').value.trim();
+        const bc = document.getElementById('cl-banco').value.trim();
+
+        if(!nom || !ced) { alert("Nombre y Cédula son obligatorios."); return; }
+
+        listaClientes.unshift({ nombre: nom, cedula: ced, telefono: tel, pais: pais, banco: bc });
+        localStorage.setItem("lista_clientes_tradex", JSON.stringify(listaClientes));
+        
+        closeModal('modal-cliente');
+        pushNotification("👤 Cliente archivado en la base de datos.");
+        renderizarTablaClientes();
+        sconizarSelectorClientesRemesa();
+    }
+
+    function renderizarTablaClientes() {
+        const tbody = document.getElementById('clientes-tbody');
+        if(!tbody) return;
+        tbody.innerHTML = "";
+        listaClientes.forEach(c => {
+            let row = document.createElement('tr');
+            row.innerHTML = `<td><strong>${c.nombre}</strong></td><td>${c.cedula}</td><td>${c.telefono}</td><td>${c.pais}</td><td><small>${c.banco}</small></td>`;
+            tbody.appendChild(row);
+        });
+        if(document.getElementById('dash-clientes-val')) document.getElementById('dash-clientes-val').innerText = listaClientes.length;
+    }
+
+    function sconizarSelectorClientesRemesa() {
+        const sel = document.getElementById('rm-remitente');
+        if(!sel) return;
+        sel.innerHTML = "";
+        listaClientes.forEach(c => {
+            let op = document.createElement('option');
+            op.value = c.nombre; op.innerText = c.nombre + " (" + c.cedula + ")";
+            sel.appendChild(op);
+        });
+    }
+
+    function pushNotification(text) {
+        const container = document.getElementById('notification-container');
+        let toast = document.createElement('div');
+        toast.className = "toast-notification";
+        toast.innerText = text;
+        container.appendChild(toast);
+        setTimeout(() => { toast.remove(); }, 4000);
+    }
+  </script>
+</body>
+</html>
