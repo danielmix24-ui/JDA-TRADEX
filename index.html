@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>JDA TRADEX — Sistema de Control v6.3.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0e1a; --surface:#111827; --surface2:#1a2235; --border:#1f2d45;
+    --gold:#f5c842; --gold2:#e8a820; --text:#e8edf5; --muted:#6b7a99;
+    --blue:#3b82f6; --teal:#0d9488; --danger:#fc5b5b; --success:#4ade80;
+    --warning:#facc15; --purple:#a855f7;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;padding-bottom: 75px;}
+  
+  .brand-logo { display: block; max-width: 120px; height: auto; margin: 0 auto 15px auto; }
+  .sidebar-logo-container { text-align: center; padding: 15px 10px 5px 10px; }
+  .sidebar-logo { max-width: 90px; height: auto; display: block; margin: 0 auto 10px auto; }
+
+  /* LOGIN CARD */
+  .login-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); padding: 15px; }
+  .login-card { background: var(--surface); border: 1px solid var(--border); padding: 35px 25px; border-radius: 16px; width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+  .login-card .logo h1 { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; color: var(--gold); }
+  .login-card .logo span { color: var(--muted); font-size: 12px; display: block; margin-top: 4px; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 1px; }
+  #error-msg { color: var(--danger); font-size: 13px; margin-top: 15px; display: none; }
+
+  #app-container { display: none; }
+
+  /* TOP NAVBAR */
+  .session-navbar { margin-left: 260px; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 30px; display: flex; justify-content: space-between; align-items: center; }
+  .session-user-info { font-size: 13.5px; display: flex; align-items: center; gap: 8px; }
+  .session-user-info strong { color: var(--gold); }
+  .btn-logout { background: rgba(252,91,91,0.1); color: var(--danger); border: 1px solid rgba(252,91,91,0.2); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+  .btn-logout:hover { background: rgba(252,91,91,0.2); }
+
+  /* SIDEBAR */
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;}
+  .logo{padding:15px 20px 22px 20px; border-bottom:1px solid var(--border); text-align: center;}
+  .logo h1{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--gold);}
+  .logo span{color:var(--muted);font-size:11px;display:block;margin-top:2px;}
+  
+  .nav{padding:14px 12px;flex:1;overflow-y:auto;}
+  .nav-section{margin-bottom:14px;}
+  .nav-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;padding:0 8px;margin-bottom:6px;}
+  
+  .nav-item{
+    display:flex; align-items:center; gap:10px; padding:11px 14px; border-radius:8px; 
+    cursor:pointer; font-size:13.5px; color:#0a0e1a; background: var(--gold); font-weight:700;
+    transition:all 0.2s ease; margin-bottom:6px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  .nav-item:hover{ background: var(--gold2); }
+  .nav-item.active{ background: #ffffff !important; color: #0a0e1a !important; font-weight: 800; box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3); }
+  .nav-item .icon{width:18px; text-align:center; font-size:15px;}
+  
+  .sidebar-footer{padding:12px 18px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);}
+  
+  /* MAIN CONTENT */
+  .main{margin-left:260px;padding:26px 30px;min-height:100vh;}
+  .page{display:none;}.page.active{display:block;}
+  .page-header{margin-bottom:24px;}
+  .page-header h2{font-family:'Syne',sans-serif;font-size:25px;font-weight:700;}
+  .page-header p{color:var(--muted);font-size:13px;margin-top:4px;}
+  
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;}
+  .stat-card .si{font-size:22px;margin-bottom:8px;}
+  .stat-card .sv{font-size:24px;font-weight:700;font-family:'Syne',sans-serif;}
+  .stat-card .sl{font-size:12px;color:var(--muted);margin-top:2px;}
+  
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:18px;padding:20px;}
+  .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;padding:12px;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;border-bottom:1px solid var(--border);white-space: nowrap;}
+  td{padding:12px;border-bottom:1px solid rgba(31,45,69,0.5);vertical-align:middle;white-space: nowrap;}
+  
+  .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block; text-transform: uppercase;}
+  .badge-procesando { background: rgba(250,204,21,0.15); color: var(--warning); border: 1px solid rgba(250,204,21,0.3); }
+  .badge-procesada { background: rgba(74,222,128,0.15); color: var(--success); border: 1px solid rgba(74,222,128,0.3); }
+  .badge-cancelada { background: rgba(252,91,91,0.15); color: var(--danger); border: 1px solid rgba(252,91,91,0.3); }
+  .badge-pendiente { background: rgba(168,85,247,0.15); color: var(--purple); border: 1px solid rgba(168,85,247,0.3); }
+
+  .btn {padding:9px 16px;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
+  .btn-p{background:var(--gold);color:#0a0e1a;}.btn-p:hover{background:var(--gold2);}
+  .btn-g{background:transparent;color:var(--text);border:1px solid var(--border);}.btn-g:hover{border-color:var(--gold);color:var(--gold);}
+  .btn-sm{padding:6px 10px; font-size:12px; border-radius:6px; font-weight: bold;}
+  .btn-success{background: var(--success); color: #0a0e1a;}
+  .btn-danger{background: var(--danger); color: #ffffff;}
+  .btn-info{background: var(--blue); color: #ffffff;}
+  
+  .fg2{grid-template-columns:1fr 1fr;}
+  .fg3{grid-template-columns:1fr 1fr 1fr;}
+  .form-stack{display:flex; flex-direction:column; gap:14px;}
+  .field label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px;}
+  .field input,.field select,.field textarea{width:100%;padding:11px 14px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13.5px;outline:none;}
+  .field input:focus,.field select:focus{border-color:var(--gold);}
+  .field input[readonly]{background:rgba(245,200,66,0.03);border-color:rgba(245,200,66,0.15);color:var(--gold);font-weight:700;}
+  .field input.bloqueado-vendedor { background:#1f293d; border-color:#2e3f5e; color:#9ca3af; cursor:not-allowed; }
+  .field input.tasa-calculada-sub { background: rgba(74,222,128,0.04); border-color: rgba(74,222,128,0.2); color: var(--success); font-weight: 700; }
+
+  .monto-wrap{position:relative;}
+  .monto-prefix{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--gold);font-weight:700;font-size:14px;}
+  .monto-wrap input{padding-left:36px;}
+  
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;align-items:center;justify-content:center;padding:15px;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;width:100%;max-width:550px;overflow-y:auto;max-height:90vh;}
+  .modal h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:18px;}
+  .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;}
+  
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:20px;}
+  .search-box{position:relative;flex:1;max-width:270px;}
+  .search-box input{width:100%;padding:10px 12px 10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);}
+
+  #notification-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; max-width: 350px; width: calc(100% - 40px); }
+  .toast-notification { background: var(--surface2); border-left: 4px solid var(--gold); border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); color: var(--text); padding: 15px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); font-size: 13px; animation: slideIn 0.3s ease forwards; }
+  @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: var(--surface); border-top: 1px solid var(--border); z-index: 150; justify-content: space-around; align-items: center; padding: 0 5px; }
+  .mobile-nav-item { display: flex; flex-direction: column; align-items: center; color: var(--muted); font-size: 10px; font-weight: 500; cursor: pointer; text-decoration: none; gap: 3px; flex: 1; text-align: center; }
+  .mobile-nav-item .m-icon { font-size: 18px; }
+  .mobile-nav-item.active { color: var(--gold); font-weight: 700; }
+
+  .mobile-admin-drawer { display: none; position: fixed; bottom: 65px; right: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 8px; box-shadow: 0 -5px 25px rgba(0,0,0,0.6); flex-direction: column; gap: 4px; z-index: 140; min-width: 180px; }
+  .mobile-admin-drawer.open { display: flex; }
+  .drawer-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; color: var(--text); font-size: 12.5px; font-weight: 600; text-decoration: none; border-radius: 6px; cursor: pointer; }
+  .drawer-item:hover { background: rgba(245,200,66,0.1); color: var(--gold); }
+
+  .seccion-tasas-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .sub-titulo-seccion { font-family: 'Syne', sans-serif; font-size: 14px; color: var(--gold); border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-bottom: 14px; grid-column: span 2; margin-top: 10px; }
+
+  /* FICHA AUDITORÍA COMPLETA */
+  .auditoria-container { background: var(--surface2); border: 1px solid var(--border); padding: 15px; border-radius: 8px; font-size: 13px; display: flex; flex-direction: column; gap: 8px; margin-top: 10px;}
+  .auditoria-linea { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border); padding-bottom: 4px; }
+  .auditoria-linea span:last-child { font-weight: bold; color: var(--text); }
+
+  @media(max-width:992px){
+    .sidebar { display: none; }
+    .session-navbar { margin-left: 0; padding: 12px 20px; }
+    .main { margin-left: 0; padding: 20px 15px; }
+    .mobile-nav { display: flex; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media(max-width:768px){ .seccion-tasas-grid { grid-template-columns: 1fr; } .sub-titulo-seccion { grid-column: span 1; } }
+  @media(max-width:600px){
+    .stats-grid { grid-template-columns: 1fr; } .fg2, .fg3 { grid-template-columns: 1fr; }
+    .topbar { flex-direction: column; align-items: stretch; } .search-box { max-width: 100%; }
+    .modal { padding: 18px; } .modal-footer { flex-direction: column; } .modal-footer .btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+  <div id="notification-container"></div>
+
+  <div id="login-container" class="login-wrapper">
+    <div class="login-card">
+      <div class="logo">
+        <img src="logo.png" alt="Logo de la app" class="brand-logo">
+        <h1>🛡️ JDA TRADEX</h1>
+        <span>Módulo de Entrada</span>
+      </div>
+      <form id="login-form" onsubmit="validarAccesoGlobal(event)">
+        <div class="field">
+          <label>Usuario Autorizado</label>
+          <input type="text" id="username" placeholder="admin / daniel / vendedor" required>
+        </div>
+        <div class="field" style="margin-top:12px;">
+          <label>Contraseña de Red</label>
+          <input type="password" id="password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-p" style="width:100%; justify-content:center; padding:12px; margin-top:20px;">Autenticar Operador ⚡</button>
+        <div id="error-msg">❌ Credenciales inválidas para este nodo de red.</div>
+      </form>
+    </div>
+  </div>
+
+  <div id="app-container">
+    
+    <div class="session-navbar">
+      <div class="session-user-info">
+        <span>🌐 Rango: <span id="session-role-badge" style="color:var(--gold); font-weight:bold;">—</span></span>
+        <span style="margin-left: 15px; color: var(--muted);">|</span>
+        <span style="margin-left: 15px;">Operador: <strong id="session-name-badge">—</strong></span>
+      </div>
+      <button class="btn-logout" onclick="ejecutarCerrarSesionGlobal()">Salir 🔄</button>
+    </div>
+
+    <nav class="sidebar">
+      <div class="sidebar-logo-container">
+        <img src="logo.png" alt="Logo de la app" class="sidebar-logo">
+      </div>
+      <div class="logo" style="padding-top: 0;">
+        <h1>💸 JDA TRADEX</h1>
+        <span>Módulo de Control</span>
+      </div>
+      <div class="nav">
+        <div class="nav-section">
+          <div class="nav-label">Principal</div>
+          <div class="nav-item active" onclick="goto('dashboard', this)"><span class="icon">📊</span><span>Dashboard</span></div>
+          <div class="nav-item" onclick="goto('remesas', this)"><span class="icon">💸</span><span>Remesas</span></div>
+          <div class="nav-item" onclick="goto('clientes', this)"><span class="icon">👥</span><span>Clientes</span></div>
+        </div>
+        <div class="nav-section" id="nav-section-admin-finanzas">
+          <div class="nav-label">Finanzas Admin</div>
+          <div class="nav-item" onclick="goto('caja', this)"><span class="icon">🗄️</span><span>Arqueo de Caja</span></div>
+          <div class="nav-item" onclick="goto('prestamos', this)"><span class="icon">💳</span><span>Préstamos</span></div>
+          <div class="nav-item" onclick="goto('bancos', this)"><span class="icon">🏦</span><span>Bancos</span></div>
+        </div>
+        <div class="nav-section" id="nav-section-admin-config">
+          <div class="nav-label">Ajustes Admin</div>
+          <div class="nav-item" onclick="goto('config', this)"><span class="icon">⚙️</span><span>Configurar Tasas</span></div>
+        </div>
+      </div>
+      <div class="sidebar-footer"><small>v6.3.0 · JDA TRADEX</small></div>
+    </nav>
+
+    <div class="mobile-nav">
+      <div class="mobile-nav-item active" id="m-nav-dashboard" onclick="gotoMobile('dashboard')"><span class="m-icon">📊</span><span>Inicio</span></div>
+      <div class="mobile-nav-item" id="m-nav-remesas" onclick="gotoMobile('remesas')"><span class="m-icon">💸</span><span>Remesas</span></div>
+      <div class="mobile-nav-item" id="m-nav-clientes" onclick="gotoMobile('clientes')"><span class="m-icon">👥</span><span>Clientes</span></div>
+      <div class="mobile-nav-item" id="m-nav-caja" onclick="gotoMobile('caja')"><span class="m-icon">🗄️</span><span>Caja</span></div>
+      <div class="mobile-nav-item" id="m-nav-admin-trigger" onclick="toggleAdminDrawer()"><span class="m-icon">⚙️</span><span>Admin</span></div>
+    </div>
+
+    <div class="mobile-admin-drawer" id="mobile-admin-drawer">
+      <div class="drawer-item" onclick="gotoMobile('prestamos')">💳 Ver Préstamos</div>
+      <div class="drawer-item" onclick="gotoMobile('bancos')">🏦 Ver Bancos</div>
+      <div class="drawer-item" onclick="gotoMobile('config')">📈 Cambiar Tasas</div>
+    </div>
+
+    <main class="main">
+      
+      <div class="page active" id="page-dashboard">
+        <div class="page-header"><h2>Dashboard Operativo</h2><p>Métricas · <span id="today-date"></span></p></div>
+        <div class="stats-grid">
+          <div class="stat-card" style="border-top:3px solid var(--gold);"><div class="si">📅</div><div class="sv" id="dash-hoy-val">0</div><div class="sl">Órdenes Activas</div></div>
+          <div class="stat-card" style="border-top:3px solid var(--success);"><div class="si">📊</div><div class="sv" id="dash-mes-val">0</div><div class="sl">Órdenes Completadas</div></div>
+          <div class="stat-card" style="border-top:3px solid var(--purple);"><div class="si">📈</div><div class="sv" id="dash-ganancias-hoy" style="color: var(--success);">Bs. 0.00</div><div class="sl">Mis Ganancias Hoy</div></div>
+          <div class="stat-card" style="border-top:3px solid var(--blue);"><div class="si">🪙</div><div class="sv" id="dash-usdt-static">Bs. --</div><div class="sl">USDT Oficial</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-remesas">
+        <div class="page-header"><h2>💸 Libro de Remesas</h2><p>Historial unificado de operaciones</p></div>
+        <div class="topbar">
+          <div class="search-box"><input placeholder="Buscar en historial..." id="buscar-remesa-input" oninput="filtrarTablaRemesas()"></div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-g" onclick="filtrarRemesasPorEstado('Todas')">📋 Historial Completo</button>
+            <button class="btn btn-p" onclick="abrirModalRemesa()">+ Nueva Remesa</button>
+          </div>
+        </div>
+        <div class="card" style="padding:0;">
+          <div class="table-responsive">
+            <table>
+              <thead><tr><th>ID / Fecha y Hora</th><th>Destino / Detalles Cuenta</th><th>Monto Base</th><th>Neto Líquido</th><th>Cliente / Emisor</th><th>Estado</th><th class="td-acciones-celda">Acciones</th></tr></thead>
+              <tbody id="remesas-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" id="page-clientes">
+        <div class="page-header"><h2>👥 Base de Clientes</h2><p>Registro único de remitentes</p></div>
+        <div class="topbar">
+          <div class="search-box"><input placeholder="Filtrar por nombre..."></div>
+          <button class="btn btn-p" onclick="openModal('modal-cliente')">+ Nuevo Cliente</button>
+        </div>
+        <div class="card" style="padding:0;">
+          <div class="table-responsive">
+            <table>
+              <thead><tr><th>Nombre Completo</th><th>Cédula / ID</th><th>Teléfono</th><th>País</th><th>Banco Frecuente</th></tr></thead>
+              <tbody id="clientes-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" id="page-caja">
+        <div class="page-header"><h2>🗄️ Arqueo de Caja y Flujo de Efectivo</h2><p>Control financiero en tiempo real</p></div>
+        <div class="stats-grid" style="margin-bottom: 20px;">
+          <div class="stat-card" style="border-top:3px solid var(--success);"><div class="si">📥</div><div class="sv" id="total-ingresos-box">Bs. 0.00</div><div class="sl">Total Ingresos</div></div>
+          <div class="stat-card" style="border-top:3px solid var(--danger);"><div class="si">📤</div><div class="sv" id="total-egresos-box">Bs. 0.00</div><div class="sl">Total Egresos</div></div>
+          <div class="stat-card" style="border-top:3px solid var(--gold); grid-column: span 2;"><div class="si">💰</div><div class="sv" id="saldo-caja-box">Bs. 0.00</div><div class="sl">Saldo Disponible Neto</div></div>
+        </div>
+        <div class="fg2" style="margin-bottom: 20px;">
+          <div class="card">
+            <h3 style="font-family:'Syne'; font-size:14px; margin-bottom:12px; color:var(--gold);">⚡ Registrar Movimiento de C
