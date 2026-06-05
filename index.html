@@ -1160,6 +1160,31 @@
         let toast = document.createElement('div'); toast.className = "toast-notification"; toast.innerText = text;
         container.appendChild(toast); setTimeout(() => { toast.remove(); }, 4000);
     }
-  </script>
+    window.registrarPrestamoFirebase = function(event) {
+    event.preventDefault();
+    const cliente = document.getElementById("p-cliente").value.trim();
+    const monto = parseFloat(document.getElementById("p-monto").value);
+    const interes = parseFloat(document.getElementById("p-interes").value) || 0;
+    
+    if(!cliente || isNaN(monto)) return;
+
+    const total = monto + (monto * (interes / 100));
+    const nuevoPrestamo = {
+        fecha: new Date().toLocaleDateString('es-VE'),
+        cliente: cliente,
+        monto: monto,
+        interes: interes,
+        total: total,
+        estatus: "Pendiente",
+        timestamp: Date.now()
+    };
+
+    // Guarda en el nodo 'prestamos' de Firebase
+    push(ref(db, 'prestamos'), nuevoPrestamo)
+        .then(() => {
+            document.getElementById("form-prestamos").reset();
+            if(window.pushNotification) window.pushNotification("✅ Préstamo registrado e indexado.");
+        });
+      </script>
 </body>
   </html>
