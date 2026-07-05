@@ -1395,12 +1395,6 @@ window.calcRemesa = function() {
   document.getElementById('rm-usdt-admin').value = totalAdminUSDT.toFixed(2) + " USDT";
 }
 
-// 2. REEMPLAZAR O AJUSTAR FUNCIÓN DE MÉTRICAS DEL DASHBOARD
-function calcularMetricasDashboard() {
-  document.getElementById('dash-hoy-val').innerText = historialRemesas.length;
-  const completadas = historialRemesas.filter(r => r.estado === 'procesada').length;
-  document.getElementById('dash-mes-val').innerText = completadas;
-
   // Sumatoria de ganancias de la casa calculadas y mostradas estrictamente en USDT
   let acumuladoGananciaCasaUSDT = 0;
   historialRemesas.forEach(r => {
