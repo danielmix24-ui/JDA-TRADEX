@@ -1333,7 +1333,54 @@
         document.getElementById('bn-plataforma').value = "";
         document.getElementById('bn-identificador').value = "";
         document.getElementById('bn-saldo').value = "";
+    }// 1. REEMPLAZAR O AJUSTAR FUNCIÓN DE CÁLCULO DE REMESA
+window.calcRemesa = function() {
+  const monto = parseFloat(document.getElementById('rm-monto').value) || 0;
+  const tasaCli = parseFloat(document.getElementById('rm-tasa').value) || 0;
+  const tasaRealMercado = parseFloat(document.getElementById('rm-tasa-real').value) || 0;
+  const trayecto = document.getElementById('rm-trayecto').value;
+  const usdtVes = variablesGlobales.usdt_ves || 46.20;
+  const gvManual = parseFloat(document.getElementById('rm-ganancia-vendedor-manual').value) || 0;
+
+  if (monto <= 0) {
+    document.getElementById('rm-neto').value = 0;
+    document.getElementById('rm-usdt-ref').value = "0.00 USDT";
+    document.getElementById('rm-usdt-admin').value = "0.00 USDT";
+    return;
+  }
+
+  // Neto en Bs para el destinatario
+  document.getElementById('rm-neto').value = (monto * tasaCli).toFixed(2);
+
+  // Capital total de la operación llevado a USDT
+  let totalUSDT = (trayecto === 'BRL_VE') ? ((monto * tasaRealMercado) / usdtVes) : monto;
+  if (totalUSDT < 0 || isNaN(totalUSDT)) totalUSDT = 0;
+  document.getElementById('rm-usdt-ref').value = totalUSDT.toFixed(2) + " USDT";
+  
+  // Descuento directo de la comisión del vendedor sobre el USDT total
+  const gananciaVendedorUSDT = totalUSDT * (gvManual / 100);
+  const totalAdminUSDT = totalUSDT - gananciaVendedorUSDT;
+  
+  document.getElementById('rm-usdt-admin').value = totalAdminUSDT.toFixed(2) + " USDT";
+}
+
+// 2. REEMPLAZAR O AJUSTAR FUNCIÓN DE MÉTRICAS DEL DASHBOARD
+function calcularMetricasDashboard() {
+  document.getElementById('dash-hoy-val').innerText = historialRemesas.length;
+  const completadas = historialRemesas.filter(r => r.estado === 'procesada').length;
+  document.getElementById('dash-mes-val').innerText = completadas;
+
+  // Sumatoria de ganancias de la casa calculadas y mostradas estrictamente en USDT
+  let acumuladoGananciaCasaUSDT = 0;
+  historialRemesas.forEach(r => {
+    if (r.estado === 'procesada' && r.ganancia_casa_usdt) {
+      acumuladoGananciaCasaUSDT += parseFloat(r.ganancia_casa_usdt);
     }
+  });
+
+  // Muestra el resultado final en el elemento del menú principal
+  document.getElementById('dash-ganancias-hoy').innerText = acumuladoGananciaCasaUSDT.toFixed(2) + " USDT";
+}
 
     window.renderizarTablaBancos = function() {
         const tbody = document.getElementById('bancos-tbody');
