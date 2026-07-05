@@ -1335,6 +1335,37 @@
         document.getElementById('bn-saldo').value = "";
     }// 1. REEMPLAZAR O AJUSTAR FUNCIÓN DE CÁLCULO DE REMESA
 window.calcRemesa = function() {
+  function calcularMetricasDashboard() {
+  // 1. Contador de órdenes totales y completadas del día
+  document.getElementById('dash-hoy-val').innerText = historialRemesas.length;
+  const completadas = historialRemesas.filter(r => r.estado === 'procesada').length;
+  document.getElementById('dash-mes-val').innerText = completadas;
+
+  // 2. Cálculo de la ganancia limpia (solo el porcentaje/spread ganado)
+  let gananciaLimpiaTotalUSDT = 0;
+
+  // Evaluar Remesas procesadas
+  historialRemesas.forEach(r => {
+    if (r.estado === 'procesada' && r.ganancia_casa_usdt) {
+      // Suma estrictamente el spread (ganancia de la casa) ya calculado en USDT, no el monto base
+      gananciaLimpiaTotalUSDT += parseFloat(r.ganancia_casa_usdt);
+    }
+  });
+
+  // Evaluar Préstamos (Si tu lista global se llama historialPrestamos o similar)
+  if (typeof historialPrestamos !== 'undefined' && Array.isArray(historialPrestamos)) {
+    historialPrestamos.forEach(p => {
+      // Ajusta 'finalizado' o el estado que uses para préstamos cobrados con éxito
+      if (p.estado === 'finalizado' && p.ganancia_interes_usdt) { 
+        // Suma solo el interés/comisión ganado, no el capital prestado completo
+        gananciaLimpiaTotalUSDT += parseFloat(p.ganancia_interes_usdt);
+      }
+    });
+  }
+
+  // 3. Reflejar la ganancia neta en el componente visual del menú principal
+  document.getElementById('dash-ganancias-hoy').innerText = gananciaLimpiaTotalUSDT.toFixed(2) + " USDT";
+                   }
   const monto = parseFloat(document.getElementById('rm-monto').value) || 0;
   const tasaCli = parseFloat(document.getElementById('rm-tasa').value) || 0;
   const tasaRealMercado = parseFloat(document.getElementById('rm-tasa-real').value) || 0;
