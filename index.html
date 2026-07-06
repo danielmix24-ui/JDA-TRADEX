@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>JDA TRADEX — Sistema de Control v6.3.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0e1a; --surface:#111827; --surface2:#1a2235; --border:#1f2d45;
+    --gold:#f5c842; --gold2:#e8a820; --text:#e8edf5; --muted:#6b7a99;
+    --blue:#3b82f6; --teal:#0d9488; --danger:#fc5b5b; --success:#4ade80;
+    --warning:#facc15; --purple:#a855f7;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;padding-bottom: 75px;}
+  
+  /* LOGIN CARD */
+  .login-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); padding: 15px; }
+  .login-card { background: var(--surface); border: 1px solid var(--border); padding: 35px 25px; border-radius: 16px; width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+  .login-card .logo h1 { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; color: var(--gold); }
+  .login-card .logo span { color: var(--muted); font-size: 12px; display: block; margin-top: 4px; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 1px; }
+  #error-msg { color: var(--danger); font-size: 13px; margin-top: 15px; display: none; }
+
+  #app-container { display: none; }
+
+  /* TOP NAVBAR */
+  .session-navbar { margin-left: 260px; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 30px; display: flex; justify-content: space-between; align-items: center; }
+  .session-user-info { font-size: 13.5px; display: flex; align-items: center; gap: 8px; }
+  .session-user-info strong { color: var(--gold); }
+  .btn-logout { background: rgba(252,91,91,0.1); color: var(--danger); border: 1px solid rgba(252,91,91,0.2); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+  .btn-logout:hover { background: rgba(252,91,91,0.2); }
+
+  /* SIDEBAR MAESTRO */
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;}
+  .logo{padding:22px 20px;border-bottom:1px solid var(--border);}
+  .logo h1{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--gold);}
+  .logo span{color:var(--muted);font-size:11px;display:block;margin-top:2px;}
+  
+  .nav{padding:14px 12px;flex:1;overflow-y:auto;}
+  .nav-section{margin-bottom:14px;}
+  .nav-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;padding:0 8px;margin-bottom:6px;}
+  
+  .nav-item{
+    display:flex; align-items:center; gap:10px; padding:11px 14px; border-radius:8px; 
+    cursor:pointer; font-size:13.5px; color:#0a0e1a; background: var(--gold); font-weight:700;
+    transition:all 0.2s ease; margin-bottom:6px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  .nav-item:hover{ background: var(--gold2); }
+  .nav-item.active{ background: #ffffff !important; color: #0a0e1a !important; font-weight: 800; box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3); }
+  .nav-item .icon{width:18px; text-align:center; font-size:15px;}
+  
+  .sidebar-footer{padding:12px 18px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);}
+  
+  /* MAIN CONTENT */
+  .main{margin-left:260px;padding:26px 30px;min-height:100vh;}
+  .page{display:none;}.page.active{display:block;}
+  .page-header{margin-bottom:24px; display:flex; justify-content:space-between; align-items:center;}
+  .page-header h2{font-family:'Syne',sans-serif;font-size:25px;font-weight:700;}
+  .page-header p{color:var(--muted);font-size:13px;margin-top:4px;}
+  
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;}
+  .stat-card .si { font-size:20px; margin-bottom:8px; }
+  .stat-card .sv { font-size:22px; font-weight:700; color:var(--text); font-family:'Syne',sans-serif; }
+  .stat-card .sl { font-size:12px; color:var(--muted); margin-top:4px; }
+  
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px;}
+  .search-box{flex:1;position:relative;}
+  .search-box input{width:100%;background:var(--surface);border:1px solid var(--border);padding:10px 16px;border-radius:8px;color:var(--text);font-size:13.5px;}
+  
+  .btn{padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-p{background:var(--gold);color:#0a0e1a;}
+  .btn-p:hover{background:var(--gold2);}
+  .btn-g{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+  
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
+  .table-responsive{width:100%;overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;text-align:left;font-size:13.5px;}
+  th{padding:14px 16px;background:rgba(255,255,255,0.02);color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);}
+  td{padding:14px 16px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  
+  .badge{padding:4px 8px;border-radius:6px;font-size:11px;font-weight:600;display:inline-block;}
+  .badge-pendiente{background:rgba(250,204,21,0.1);color:var(--warning);}
+  .badge-procesada{background:rgba(74,222,128,0.1);color:var(--success);}
+  .badge-cancelada{background:rgba(252,91,91,0.1);color:var(--danger);}
+  
+  /* FORMS & MODALS */
+  .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(5,7,12,0.85);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:all 0.25s;}
+  .modal-overlay.open{opacity:1;pointer-events:auto;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:500px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,0.6);transform:scale(0.95);transition:all 0.25s;}
+  .modal-overlay.open .modal{transform:scale(1);}
+  .modal h3{font-family:'Syne',sans-serif;font-size:18px;margin-bottom:20px;color:var(--gold);}
+  
+  .form-stack{display:flex;flex-direction:column;gap:14px;}
+  .form-grid{display:grid;gap:14px;}
+  .fg2{grid-template-columns:repeat(2,1fr);}
+  .fg3{grid-template-columns:repeat(3,1fr);}
+  
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .field label{font-size:11.5px;color:var(--muted);font-weight:500;}
+  .field input, .field select{background:var(--surface2);border:1px solid var(--border);padding:10px 12px;border-radius:8px;color:var(--text);font-size:13.5px;outline:none;}
+  .field input:focus, .field select:focus{border-color:var(--gold);}
+  
+  .monto-wrap{position:relative;display:flex;align-items:center;}
+  .monto-prefix{position:absolute;left:12px;font-size:14px;color:var(--muted);font-weight:600;}
+  .monto-wrap input{padding-left:30px;width:100%;}
+  
+  .modal-footer{margin-top:22px;display:flex;justify-content:flex-end;gap:10px;}
+  
+  .tasa-calculada-sub { background: rgba(245, 200, 66, 0.05) !important; color: var(--gold) !important; font-weight: bold; border-color: rgba(245, 200, 66, 0.15) !important; text-align: center; }
+  .seccion-tasas-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .sub-titulo-seccion { grid-column: span 3; font-family: 'Syne'; font-size: 13px; color: var(--muted); margin-top: 10px; padding-bottom: 4px; border-bottom: 1px dashed var(--border); text-transform: uppercase; letter-spacing: 1px; }
+  
+  .bloqueado-vendedor { background: rgba(31, 45, 69, 0.3) !important; color: var(--muted) !important; cursor: not-allowed; border-color: transparent !important; }
+  
+  #notification-container { position: fixed; bottom: 85px; right: 20px; z-index: 1100; display: flex; flex-direction: column; gap: 8px; }
+  .toast-notification { background: #101726; border-left: 4px solid var(--gold); border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); color: var(--text); padding: 12px 20px; border-radius: 8px; font-size: 13px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); animation: slideIn 0.2s ease forwards; font-weight: 500; }
+  
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* NAV MOVIL BAJO */
+  .mobile-bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 68px; background: #0e1424; border-top: 1px solid var(--border); display: none; justify-content: space-around; align-items: center; z-index: 900; padding: 0 10px; }
+  .mobile-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--muted); font-size: 10px; font-weight: 500; cursor: pointer; flex: 1; height: 100%; gap: 4px; transition: all 0.2s; }
+  .mobile-nav-item .m-icon { font-size: 19px; }
+  .mobile-nav-item.active { color: var(--gold); font-weight: 700; }
+
+  .mobile-admin-drawer { position: fixed; bottom: 68px; left: 0; right: 0; background: #111827; border-top: 1px solid var(--border); border-top-left-radius: 16px; border-top-right-radius: 16px; z-index: 899; display: flex; flex-direction: column; padding: 15px; gap: 10px; transform: translateY(100%); transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 -10px 25px rgba(0,0,0,0.5); }
+  .mobile-admin-drawer.open { transform: translateY(0); }
+  .drawer-title { font-family: 'Syne'; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; text-align: center;}
+  .drawer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .drawer-btn { background: var(--surface2); border: 1px solid var(--border); padding: 12px 8px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--text); font-size: 11px; font-weight: 600; text-align: center;}
+  .drawer-btn .d-icon { font-size: 18px; color: var(--gold); }
+
+  @media(max-width: 992px) {
+    .sidebar { display: none; }
+    .session-navbar { margin-left: 0; padding: 12px 20px; }
+    .main { margin-left: 0; padding: 20px 15px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .seccion-tasas-grid { grid-template-columns: repeat(1, 1fr); }
+    .sub-titulo-seccion { grid-column: span 1; }
+    .fg3 { grid-template-columns: repeat(1, 1fr); }
+    .fg2 { grid-template-columns: repeat(1, 1fr); }
+    .mobile-bottom-nav { display: flex; }
+    .topbar { flex-direction: column; align-items: stretch; }
+    .topbar .btn { justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+  <div id="notification-container"></div>
+
+  <!-- SECCIÓN DE LOGIN CON AUTENTICACIÓN CENTRALIZADA -->
+  <div class="login-wrapper" id="login-container">
+    <div class="login-card">
+      <div class="logo">
+        <h1>JDA TRADEX</h1>
+        <span>Gobernanza de Red & Liquidez</span>
+      </div>
+      <form onsubmit="window.validarAccesoGlobal(event)">
+        <div class="form-stack">
+          <div class="field"><label>Identificador de Operador</label><input type="text" id="username" placeholder="Usuario..." required></div>
+          <div class="field"><label>Clave de Seguridad Encintada</label><input type="password" id="password" placeholder="••••••••" required></div>
+          <button class="btn btn-p" type="submit" style="width: 100%; justify-content: center; margin-top: 10px; font-weight: bold;">Desbloquear Terminal 🔓</button>
+        </div>
+      </form>
+      <div id="error-msg">⚠️ Credenciales incorrectas o firma digital inválida.</div>
+    </div>
+  </div>
+
+  <div id="app-container">
+    <!-- BARRA DE SESIÓN SUPERIOR -->
+    <header class="session-navbar">
+      <div class="session-user-info">
+        💻 Operador: <strong id="session-role-badge">Cargando...</strong> 
+        <button id="btn-ver-ganancia-vendedor" class="btn" style="padding: 4px 8px; font-size: 11px; background: rgba(245, 200, 66, 0.1); color: var(--gold); border: 1px solid rgba(245, 200, 66, 0.2); border-radius: 5px; font-weight: 600; display: none; margin-left: 10px;" onclick="openModal('modal-ganancia-vendedor')">💼 Ver Comisión</button>
+      </div>
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <span id="today-date" style="font-size: 12px; color: var(--muted); font-weight: 500;"></span>
+        <button class="btn-logout" onclick="window.ejecutarCerrarSesionGlobal()">Salir 🚪</button>
+      </div>
+    </header>
+
+    <!-- SIDEBAR MASTER DESKTOP -->
+    <aside class="sidebar">
+      <div class="logo">
+        <h1>JDA TRADEX</h1>
+        <span>Control Console v6.3.0</span>
+      </div>
+      <nav class="nav">
+        <div class="nav-section">
+          <div class="nav-label">Core Comercial</div>
+          <div class="nav-item active" onclick="goto('dash', this)"><span class="icon">📊</span>Dashboard General</div>
+          <div class="nav-item" onclick="goto('remesas', this)"><span class="icon">💸</span>Libro Remesas</div>
+          <div class="nav-item" onclick="goto('clientes', this)"><span class="icon">👥</span>Base Clientes</div>
+        </div>
+        <div class="nav-section" id="nav-section-admin-finanzas">
+          <div class="nav-label">Finanzas Avanzadas (Admin)</div>
+          <div class="nav-item" onclick="goto('caja', this)"><span class="icon">🗄️</span>Arqueo de Caja</div>
+          <div class="nav-item" onclick="goto('prestamos', this)"><span class="icon">💳</span>Módulo Préstamos</div>
+          <div class="nav-item" onclick="goto('bancos', this)"><span class="icon">🏦</span>Control de Bancos</div>
+        </div>
+        <div class="nav-section" id="nav-section-admin-config">
+          <div class="nav-label">Estructura Global</div>
+          <div class="nav-item" onclick="goto('config', this)"><span class="icon">⚙️</span>Tasas Maestras</div>
+        </div>
+      </nav>
+      <div class="sidebar-footer">🔒 JDA Tradex Corporation SA.</div>
+    </aside>
+
+    <!-- BARRA DE NAVEGACIÓN INFERIOR PARA TELÉFONOS -->
+    <div class="mobile-bottom-nav">
+      <div class="mobile-nav-item active" id="m-nav-dash" onclick="gotoMobile('dash')"><span class="m-icon">📊</span>Dashboard</div>
+      <div class="mobile-nav-item" id="m-nav-remesas" onclick="gotoMobile('remesas')"><span class="m-icon">💸</span>Remesas</div>
+      <div class="mobile-nav-item" id="m-nav-clientes" onclick="gotoMobile('clientes')"><span class="m-icon">👥</span>Clientes</div>
+      <div class="mobile-nav-item" id="m-nav-caja" onclick="gotoMobile('caja')"><span class="m-icon">🗄️</span>Caja</div>
+      <div class="mobile-nav-item" id="m-nav-admin-trigger" onclick="window.toggleAdminDrawer()"><span class="m-icon">👑</span>Admin panel</div>
+    </div>
+
+    <!-- CAJÓN DESPLEGABLE MÓVIL PARA OPCIONES DE ADMINISTRADOR -->
+    <div class="mobile-admin-drawer" id="mobile-admin-drawer">
+      <div class="drawer-title">Módulos Administrativos Protegidos</div>
+      <div class="drawer-grid">
+        <div class="drawer-btn" onclick="gotoMobile('prestamos')"><span class="d-icon">💳</span>Préstamos</div>
+        <div class="drawer-btn" onclick="gotoMobile('bancos')"><span class="d-icon">🏦</span>Bancos</div>
+        <div class="drawer-btn" onclick="gotoMobile('config')"><span class="d-icon">⚙️</span>Tasas</div>
+      </div>
+    </div>
+
+    <!-- CONTENEDORES PRINCIPALES DE PÁGINAS -->
+    <main class="main">
+
+      <div class="page active" id="page-dash">
+        <div class="page-header"><h2>📊 Dashboard de Operaciones</h2><p>Métricas consolidadas del flujo de red de hoy</p></div>
+        <div class="stats-grid">
+          <div class="stat-card" style="border-top:3px solid var(--gold);"><div class="si">📅</div><div class="sv" id="dash-hoy-val">0</div><div class="sl">Órdenes Activas</div></div>
+          <div class="stat-card" style="border-top:3px solid var(--success);"><div class="si">📊</div><div class="sv" id="dash-mes-val">0</div><div class="sl">Órdenes Completadas</div></div>
+          <div class="stat-card" style="border-top:3px solid var(--blue);"><div class="si">🪙</div><div class="sv" id="dash-usdt-static">Bs. --</div><div class="sl">USDT Oficial</div></div>
+          <div class="stat-card" style="border-top:3px solid var(--purple);"><div class="si">📈</div><div class="sv" id="dash-ganancias-hoy">0.00 USDT</div><div class="sl">Ganancias de la Casa (Hoy)</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-remesas">
+        <div class="page-header"><h2>💸 Libro de Remesas</h2><p>Historial unificado de operaciones</p></div>
+        <div class="topbar">
+          <div class="search-box"><input placeholder="Buscar en historial..." id="buscar-remesa-input" oninput="window.filtrarRemesasPorTexto()"></div>
+          <div style="display: flex; gap: 6px; align-items: center; margin: 0 8px;">
+            <button class="btn btn-g btn-sm" style="padding: 6px 12px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; cursor: pointer;" onclick="window.setFiltroRemesa('procesando')">⏳ Procesando</button>
+            <button class="btn btn-g btn-sm" style="padding: 6px 12px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; cursor: pointer;" onclick="window.setFiltroRemesa('hoy')">📅 Día</button>
+            <button class="btn btn-g btn-sm" style="padding: 6px 12px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; cursor: pointer;" onclick="window.setFiltroRemesa('mes')">📊 Mes</button>
+            <button class="btn btn-g btn-sm" style="padding: 6px 12px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; cursor: pointer;" onclick="window.setFiltroRemesa('todas')">📁 Todas</button>
+          </div>
+          <button class="btn btn-p" onclick="abrirModalRemesa()">+ Nueva Remesa</button>
+        </div>
+        <div class="card" style="padding:0;">
+          <div class="table-responsive">
+            <table>
+              <thead><tr><th>ID / Hora</th><th>Destino / Cuenta</th><th>Monto Base</th><th>Neto Líquido</th><th>Cliente</th><th>Estado</th><th id="th-acciones-admin">Acciones</th></tr></thead>
+              <tbody id="remesas-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" id="page-clientes">
+        <div class="page-header"><h2>👥 Base de Clientes</h2><p>Registro único de remitentes</p></div>
+        <div class="topbar">
+          <div class="search-box"><input placeholder="Filtrar por nombre..."></div>
+          <button class="btn btn-p" onclick="openModal('modal-cliente')">+ Nuevo Cliente</button>
+        </div>
+        <div class="card" style="padding:0;">
+          <div class="table-responsive">
+            <table>
+              <thead><tr><th>Nombre Completo</th><th>Cédula / ID</th><th>Teléfono</th><th>País</th><th>Banco Frecuente</th></tr></thead>
+              <tbody id="clientes-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" id="page-caja">
+        <div class="page-header"><h2>🗄️ Arqueo de Caja y Flujo de Efectivo</h2><p>Control financiero en tiempo real</p></div>
+        <div class="stats-grid" style="margin-bottom: 20px;">
+          <div class="stat-card" style="border-top:3px solid var(--success);"><div class="si">📥</div><div class="sv" id="total-ingresos-box">Bs. 0.00</div><div class="sl">Total Ingresos</div></div>
+          <div class="stat-card" style="border-top:3px solid var(--danger);"><div class="si">📤</div><div class="sv" id="total-egresos-box">Bs. 0.00</div><div class="sl">Total Egresos</div></div>
+          <div class="stat-card" style="border-top:3px solid var(--gold); grid-column: span 2;"><div class="si">💰</div><div class="sv" id="saldo-caja-box">Bs. 0.00</div><div class="sl">Saldo Disponible Neto</div></div>
+        </div>
+        <div class="fg2" style="margin-bottom: 20px;">
+          <div class="card">
+            <h3 style="font-family:'Syne'; font-size:14px; margin-bottom:12px; color:var(--gold);">⚡ Registrar Movimiento de Caja</h3>
+            <div class="form-stack">
+              <div class="field">
+                <label>Tipo de Transacción</label>
+                <select id="cj-tipo">
+                  <option value="Ingreso">🟢  Ingreso (Entrada de Capital)</option>
+                  <option value="Egreso">🔴 Egreso (Gasto / Salida / Pago)</option>
+                </select>
+              </div>
+              <div class="field"><label>Monto en Bolívares (Bs.)</label><input type="number" id="cj-monto" placeholder="0.00"></div>
+              <div class="field"><label>Concepto o Descripción</label><input type="text" id="cj-concepto" placeholder="Ej. Pago de servicio..."></div>
+              <button class="btn btn-p" onclick="registrarMovimientoCaja()" style="width:100%;">Archivar Movimiento 💾</button>
+            </div>
+          </div>
+          <div class="card" style="display: flex; flex-direction: column; justify-content: center;">
+            <h3 style="font-family:'Syne'; font-size:14px; margin-bottom:12px; color:var(--muted);">Fondo de Apertura (Base)</h3>
+            <div class="field"><label>Monto Base Inicial</label><input type="number" id="cj-apertura" value="0.00" oninput="guardarBaseAperturaCaja()"></div>
+          </div>
+        </div>
+        <div class="card" style="padding:0;">
+          <h3 style="font-family:'Syne'; font-size:13px; padding:15px; border-bottom:1px solid var(--border); color:var(--gold);">📋 Historial de Caja Diario</h3>
+          <div class="table-responsive">
+            <table>
+              <thead><tr><th>Hora</th><th>Tipo</th><th>Concepto</th><th>Monto</th><th>Acción</th></tr></thead>
+              <tbody id="caja-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" id="page-prestamos">
+        <div class="page-header"><h2>💳 Módulo de Préstamos</h2><p>Financiamientos internos aprobados</p></div>
+        
+        <!-- NUEVO METRIC GRID: REGISTRA DE MANERA INDEPENDIENTE LAS GANANCIAS EN EL MENÚ DE PRÉSTAMOS -->
+        <div class="stats-grid" style="margin-bottom: 18px;">
+          <div class="stat-card" style="border-top:3px solid var(--purple); grid-column: span 4;">
+            <div class="si">📈</div>
+            <div class="sv" id="prestamos-ganancias-acumuladas">$0.00 USD</div>
+            <div class="sl">Ganancias Netas por Intereses Generados (Módulo Préstamos)</div>
+          </div>
+        </div>
+
+        <div class="topbar">
+          <div class="search-box"><input placeholder="Buscar préstamo..."></div>
+          <button class="btn btn-p" onclick="abrirModalPrestamo()">+ Nuevo Préstamo</button>
+        </div>
+        <div class="card" style="padding:0;">
+          <div class="table-responsive">
+            <table>
+              <thead><tr><th>Cliente Deudor</th><th>Monto</th><th>Interés (%)</th><th>Vencimiento</th><th>Estado</th><th>Acción</th></tr></thead>
+              <tbody id="prestamos-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card" style="padding:0; margin-top: 20px;">
+          <h3 style="font-family:'Syne'; font-size:13px; padding:15px; border-bottom:1px solid var(--border); color:var(--gold);">📋 Registro de Transacciones Realizadas (Historial Independiente)</h3>
+          <div class="table-responsive">
+            <table>
+              <thead><tr><th>Fecha / Hora</th><th>Cliente</th><th>Tipo de Acción</th><th>Monto Base</th><th>Interés Aplicado</th></tr></thead>
+              <tbody id="prestamos-historial-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" id="page-bancos">
+        <div class="page-header"><h2>🏦 Control de Bancos y Cuentas</h2><p>Monitoreo de capital de JDA TRADEX</p></div>
+        <div class="fg2" style="margin-bottom: 20px;">
+          <div class="card">
+            <h3 style="font-family:'Syne'; font-size:14px; margin-bottom:12px; color:var(--gold);">⚡ Registrar/Actualizar Banco Autorizado</h3>
+            <div class="form-stack">
+              <div class="field"><label>Nombre de la Plataforma / Banco</label><input type="text" id="bn-plataforma" placeholder="Ej. Banesco, Zelle, Bofa..."></div>
+              <div class="field"><label>Identificador o Cuenta</label><input type="text" id="bn-identificador" placeholder="Ej. Correo, número de cuenta..."></div>
+              <div class="field"><label>Saldo Disponible Activo</label><input type="number" id="bn-saldo" placeholder="0.00" step="0.01"></div>
+              <button class="btn btn-p" onclick="registrarBanco()" style="width:100%;">Sincronizar Banco 💾</button>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="padding:0;">
+          <div class="table-responsive">
+            <table>
+              <thead><tr><th>Plataforma</th><th>Identificador</th><th>Saldo Sincronizado</th><th>Acción</th></tr></thead>
+              <tbody id="bancos-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" id="page-config">
+        <div class="page-header"><h2>⚙️ Panel de Control de Tasas Maestro</h2><p>Variables Globales de Red y Coeficientes</p></div>
+        
+        <div class="card" style="background: linear-gradient(135deg, var(--surface) 0%, #172237 100%); border: 1px solid var(--gold); margin-bottom: 18px;">
+          <h3 style="font-family:'Syne'; font-size:14px; margin-bottom:12px; color:var(--gold);">⚡ Configuración de Parámetros Básicos</h3>
+          <div class="form-grid fg3">
+            <div class="field"><label>💵 Valor Base USDT en Venezuela (VES)</label><input type="number" id="calc-ref-usdt" step="0.01" value="46.20" oninput="autoCalcularEstructuraCompleta()"></div>
+            <div class="field"><label>📉 Margen de Ganancia de la Casa (%)</label><input type="number" id="cfg-ganancia-casa" step="0.1" value="6.0" oninput="autoCalcularEstructuraCompleta()"></div>
+            <div class="field"><label>🛍️ Margen de Ganancia del Vendedor (%)</label><input type="number" id="cfg-ganancia-vendedor" step="0.1" value="0.0" oninput="autoCalcularEstructuraCompleta()"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="seccion-tasas-grid">
+            
+            <div class="sub-titulo-seccion">📥 Cotizaciones desde el Exterior hacia Venezuela</div>
+            
+            <div class="field"><label>🇺🇸 USA a Venezuela (USD)</label>
+              <input type="number" id="calc-ref-usa" step="0.01" value="1.00" oninput="autoCalcularEstructuraCompleta()">
+              <input type="text" id="lbl-usa-real" readonly placeholder="Tasa Real" style="margin-top:4px;">
+              <input type="text" id="lbl-usa-cli" class="tasa-calculada-sub" readonly placeholder="Tasa Cliente" style="margin-top:4px;">
+            </div>
+
+            <div class="field"><label>🇧🇷 Brasil a Venezuela (BRL)</label>
+              <input type="number" id="calc-ref-br" step="0.01" value="5.40" oninput="autoCalcularEstructuraCompleta()">
+              <input type="text" id="lbl-brl-real" readonly style="margin-top:4px;">
+              <input type="text" id="lbl-brl-cli" class="tasa-calculada-sub" readonly style="margin-top:4px;">
+            </div>
+
+            <div class="field"><label>🇩🇴 Dominicana a Venezuela (DOP)</label>
+              <input type="number" id="calc-ref-do" step="0.01" value="58.50" oninput="autoCalcularEstructuraCompleta()">
+              <input type="text" id="lbl-do-real" readonly style="margin-top:4px;">
+              <input type="text" id="lbl-do-cli" class="tasa-calculada-sub" readonly style="margin-top:4px;">
+            </div>
+
+            <div class="field"><label>🇨🇴 Colombia a Venezuela (COP)</label>
+              <input type="number" id="calc-ref-co" step="1" value="3950" oninput="autoCalcularEstructuraCompleta()">
+              <input type="text" id="lbl-co-real" readonly style="margin-top:4px;">
+              <input type="text" id="lbl-co-cli" class="tasa-calculada-sub" readonly style="margin-top:4px;">
+            </div>
+
+            <div class="field"><label>🇵🇪 Perú a Venezuela (PEN)</label>
+              <input type="number" id="calc-ref-pe" step="0.01" value="3.73" oninput="autoCalcularEstructuraCompleta()">
+              <input type="text" id="lbl-pen-real" readonly style="margin-top:4px;">
+              <input type="text" id="lbl-pen-cli" class="tasa-calculada-sub" readonly style="margin-top:4px;">
+            </div>
+
+            <div class="field"><label>🇨🇱 Chile a Venezuela (CLP)</label>
+              <input type="number" id="calc-ref-cl" step="1" value="910" oninput="autoCalcularEstructuraCompleta()">
+              <input type="text" id="lbl-clp-real" readonly style="margin-top:4px;">
+              <input type="text" id="lbl-clp-cli" class="tasa-calculada-sub" readonly style="margin-top:4px;">
+            </div>
+
+            <div class="field"><label>🇪🇨 Ecuador a Venezuela (USD)</label>
+              <input type="number" id="calc-ref-ec" step="0.01" value="1.00" oninput="autoCalcularEstructuraCompleta()">
+              <input type="text" id="lbl-ecd-real" readonly style="margin-top:4px;">
+              <input type="text" id="lbl-ecd-cli" class="tasa-calculada-sub" readonly style="margin-top:4px;">
+            </div>
+
+            <div class="field"><label>🇲🇽 México a Venezuela (MXN)</label>
+              <input type="number" id="calc-ref-mx" step="0.01" value="17.80" oninput="autoCalcularEstructuraCompleta()">
+              <input type="text" id="lbl-mxn-real" readonly style="margin-top:4px;">
+              <input type="text" id="lbl-mxn-cli" class="tasa-calculada-sub" readonly style="margin-top:4px;">
+            </div>
+
+            <div class="field"><label>🇵🇦 Panamá a Venezuela (USD)</label>
+              <input type="number" id="calc-ref-pa" step="0.01" value="1.00" oninput="autoCalcularEstructuraCompleta()">
+              <input type="text" id="lbl-pan-real" readonly style="margin-top:4px;">
+              <input type="text" id="lbl-pan-cli" class="tasa-calculada-sub" readonly style="margin-top:4px;">
+            </div>
+
+            <div class="sub-titulo-seccion">📤 Cotizaciones de Salida desde Venezuela al Exterior</div>
+
+            <div class="field"><label>🇻🇪 Venezuela a USA (USD)</label>
+              <input type="number" id="calc-out-usa" step="0.001" value="0.022" oninput="autoCalcularEstructuraCompleta()">
+              <input type="text" id="lbl-ve-usd-real" readonly style="margin-top:4px;">
+              <input type="text" id="lbl-ve-usd-cli" class="tasa-calculada-sub" readonly style="margin-top:4px;">
+            </div>
+
+            <div class="field"><label>🇻🇪 Venezuela a Brasil (BRL)</label>
+              <input type="number" id="calc-out-br" step="0.001" value="0.12" oninput="autoCalcularEstructuraCompleta()">
+              <input type="text" id="lbl-ve-brl-real" readonly style="margin-top:4px;">
+              <input type="text" id="lbl-ve-brl-cli" class="tasa-calculada-sub" readonly style="margin-top:4px;">
+            </div>
+
+            <div class="field"><label>🇻🇪 Venezuela a Dominicana (DOP)</label>
+              <input type="number" id="calc-out-do" step="0.01" value="1.26" oninput="autoCalcularEstructuraCompleta()">
+              <input type="text" id="lbl-ve-dop-real" readonly style="margin-top:4px;">
+              <input type="text" id="lbl-ve-dop-cli" class="tasa-calculada-sub" readonly style="margin-top:4px;">
+            </div>
+
+            <div class="field"><label>🇻🇪 Venezuela a Colombia (COP)</label>
+              <input type="number" id="calc-out-co" step="0.1" value="85.5" oninput="autoCalcularEstructuraCompleta()">
+              <input type="text" id="lbl-ve-cop-real" readonly style="margin-top:4px;">
+              <input type="text" id="lbl-ve-cop-cli" class="tasa-calculada-sub" readonly style="margin-top:4px;">
+            </div>
+
+            <div class="field"><label>🇻🇪 Venezuela a Perú (PEN)</label>
+              <input type="number" id="calc-out-pe" step="0.001" value="0.081" oninput="autoCalcularEstructuraCompleta()">
+              <input type="text" id="lbl-ve-pen-real" readonly style="margin-top:4px;">
+              <input type="text" id="lbl-ve-pen-cli" class="tasa-calculada-sub" readonly style="margin-top:4px;">
+            </div>
+
+            <div class="field"><label>🇻🇪 Venezuela a Chile (CLP)</label>
+              <input type="number" id="calc-out-cl" step="0.1" value="19.5" oninput="autoCalcularEstructuraCompleta()">
+              <input type="text" id="lbl-ve-clp-real" readonly style="margin-top:4px;">
+              <input type="text" id="lbl-ve-clp-cli" class="tasa-calculada-sub" readonly style="margin-top:4px;">
+            </div>
+
+            <div class="field"><label>🇻🇪 Venezuela a Ecuador (USD)</label>
+              <input type="number" id="calc-out-ec" step="0.001" value="0.022" oninput="autoCalcularEstructuraCompleta()">
+              <input type="text" id="lbl-ve-ecd-real" readonly style="margin-top:4px;">
+              <input type="text" id="lbl-ve-ecd-cli" class="tasa-calculada-sub" readonly style="margin-top:4px;">
+            </div>
+
+            <div class="field"><label>🇻🇪 Venezuela a México (MXN)</label>
+              <input type="number" id="calc-out-mx" step="0.01" value="0.38" oninput="autoCalcularEstructuraCompleta()">
+              <input type="text" id="lbl-ve-mxn-real" readonly style="margin-top:4px;">
+              <input type="text" id="lbl-ve-mxn-cli" class="tasa-calculada-sub" readonly style="margin-top:4px;">
+            </div>
+
+            <div class="field"><label>🇻🇪 Venezuela a Panamá (USD)</label>
+              <input type="number" id="calc-out-pa" step="0.001" value="0.022" oninput="autoCalcularEstructuraCompleta()">
+              <input type="text" id="lbl-ve-pan-real" readonly style="margin-top:4px;">
+              <input type="text" id="lbl-ve-pan-cli" class="tasa-calculada-sub" readonly style="margin-top:4px;">
+            </div>
+
+          </div>
+          <button class="btn btn-p" onclick="guardarConfigTasas()" style="width:100%; margin-top:25px;">💾 Aplicar y Sincronizar Cotizaciones de Red</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="modal-remesa">
+    <div class="modal">
+      <h3>💸 Emitir Orden Transnacional</h3>
+      <div class="form-stack">
+        <div class="field">
+          <label>Trayecto o Sentido del Intercambio</label>
+          <select id="rm-trayecto" onchange="onTrayectoChange()">
+            <option value="USA_VE">🇺🇸 ➔ 🇻🇪 USA a Venezuela (USD)</option>
+            <option value="BRL_VE">🇧🇷 ➔ 🇻🇪 Brasil a Venezuela (BRL)</option>
+            <option value="DOP_VE">🇩🇴 ➔ 🇻🇪 Dominicana a Venezuela (DOP)</option>
+            <option value="COP_VE">🇨🇴 ➔ 🇻🇪 Colombia a Venezuela (COP)</option>
+            <option value="PEN_VE">🇵🇪 ➔ 🇻🇪 Perú a Venezuela (PEN)</option>
+            <option value="CLP_VE">🇨🇱 ➔ 🇻🇪 Chile a Venezuela (CLP)</option>
+            <option value="ECD_VE">🇪🇨 ➔ 🇻🇪 Ecuador a Venezuela (USD)</option>
+            <option value="MXN_VE">🇲🇽 ➔ 🇻🇪 México a Venezuela (MXN)</option>
+            <option value="PAN_VE">🇵🇦 ➔ 🇻🇪 Panamá a Venezuela (USD)</option>
+            <option value="VE_USA">🇻🇪 ➔ 🇺🇸 Venezuela a USA (USD)</option>
+            <option value="VE_BRL">🇻🇪 ➔ 🇧🇷 Venezuela a Brasil (BRL)</option>
+            <option value="VE_DOP">🇻🇪 ➔ 🇩🇴 Venezuela a Dominicana (DOP)</option>
+            <option value="VE_COP">🇻🇪 ➔ 🇨🇴 Venezuela a Colombia (COP)</option>
+            <option value="VE_PEN">🇻🇪 ➔ 🇵🇪 Venezuela a Perú (PEN)</option>
+            <option value="VE_CLP">🇻🇪 ➔ 🇨🇱 Venezuela a Chile (CLP)</option>
+            <option value="VE_ECD">🇻🇪 ➔ 🇪🇨 Venezuela a Ecuador (USD)</option>
+            <option value="VE_MXN">🇻🇪 ➔ 🇲🇽 Venezuela a México (MXN)</option>
+            <option value="VE_PAN">🇻🇪 ➔ 🇵🇦 Venezuela a Panamá (USD)</option>
+          </select>
+        </div>
+        <div class="field"><label>Monto Base Enviado</label><div class="monto-wrap"><span class="monto-prefix" id="rm-sym">$</span><input type="number" id="rm-monto" placeholder="0.00" oninput="calcRemesa()"></div></div>
+        <div class="field"><label>📈 Tasa Real del Mercado</label><input type="number" id="rm-tasa-real" readonly></div>
+        <div class="field"><label>🛍️ Tasa Aplicada al Cliente</label><input type="number" id="rm-tasa" step="0.00001" oninput="calcRemesa()"></div>
+        <div class="field"><label>💼 Porcentaje Ganancia Vendedor (%)</label><input type="number" id="rm-ganancia-vendedor-manual" step="0.1" value="0.0" oninput="calcRemesa()"></div>
+        <div class="field"><label>🪙 Monto USDT Real Equivalente</label><input type="text" id="rm-usdt-ref" readonly style="background: rgba(59, 130, 246, 0.08); border-color: rgba(59, 130, 246, 0.3); color: #60a5fa; font-weight: bold; text-align: center;"></div>
+        <div class="field"><label>🛡️ Ganancia Neto para Administrator (Casa)</label><input type="text" id="rm-usdt-admin" readonly style="background: rgba(168, 85, 247, 0.12); border-color: rgba(168, 85, 247, 0.4); color: #c084fc; font-weight: 800; font-size:14.5px; text-align:center;"></div>
+        <div class="field"><label>Monto Neto Líquido a Entregar al Destinatario</label><input type="number" id="rm-neto" readonly style="font-size:16px; font-weight:bold; color:var(--success); text-align: center;"></div>
+        <div class="field"><label>Cliente Registrado</label><select id="rm-remitente" class="js-select-clientes"></select></div>
+        <div class="field"><label>💳 Número de Cuenta Destinatario</label><input type="text" id="rm-cuenta-cliente" placeholder="Ej. 0102-XXXX-XX-XXXXXXXXXX"></div>
+        <div class="field"><label>Datos Destinatario (Nombre/CI)</label><input type="text" id="rm-dest" placeholder="Ingresar datos de liquidación segura"></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-g" onclick="closeModal('modal-remesa')">Cerrar</button><button class="btn btn-p" onclick="guardarRemesa()">⚡ Registrar Operación</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-ganancia-vendedor">
+    <div class="modal">
+      <h3>💼 Control de Comisiones del Vendedor</h3>
+      <div style="background:var(--surface2); padding:15px; border-radius:8px; border:1px solid var(--border); text-align:center; margin-bottom:15px;">
+        <span style="font-size:12px; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:4px;">Total Acumulado Vendedor (Hoy)</span>
+        <h2 id="total-vendedor-modal-val" style="color:var(--gold); font-family:'Syne'; font-size:28px;">0.00 USDT</h2>
+      </div>
+      <div class="modal-footer"><button class="btn btn-p" style="width:100%;" onclick="closeModal('modal-ganancia-vendedor')">Cerrar Ventana</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-prestamo"><div class="modal"><h3>💳 Aperturar Nuevo Préstamo</h3><div class="form-stack"><div class="field"><label>Seleccionar Cliente Deudor</label><select id="pr-cliente" class="js-select-clientes"></select></div><div class="field"><label>Capital Solicitado</label><div class="monto-wrap"><span class="monto-prefix">$</span><input type="number" id="pr-monto" placeholder="0.00" required></div></div><div class="field"><label>Tasa de Interés (%)</label><input type="number" id="pr-interes" value="5"></div><div class="field"><label>Fecha de Vencimiento</label><input type="date" id="pr-vencimiento" required></div></div><div class="modal-footer"><button class="btn btn-g" onclick="closeModal('modal-prestamo')">Cancelar</button><button class="btn btn-p" onclick="guardarNuevoPrestamo()">⚡ Otorgar Préstamo</button></div></div></div>
+  <div class="modal-overlay" id="modal-cliente"><div class="modal"><h3>👥 Registrar Nuevo Cliente</h3><div class="form-stack"><div class="field"><label>Nombre Completo</label><input type="text" id="cl-nombre" placeholder="Ej. Juan Pérez" required></div><div class="field"><label>Cédula / ID Nacional</label><input type="text" id="cl-cedula" placeholder="Ej. V-12345678" required></div><div class="field"><label>Teléfono de Contacto</label><input type="text" id="cl-telefono" placeholder="Ej. +58 412-1234567" required></div><div class="field"><label>País de Residencia</label><input type="text" id="cl-pais" placeholder="Ej. Venezuela" required></div><div class="field"><label>Banco de Preferencia</label><input type="text" id="cl-banco" placeholder="Ej. Banesco" required></div></div><div class="modal-footer"><button class="btn btn-g" onclick="closeModal('modal-cliente')">Cancelar</button><button class="btn btn-p" onclick="guardarNuevoCliente()">💾 Archivar Cliente</button></div></div></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBbTAoAtNbMtjMzKGxq37h1sgFASM7GgT4",
+      authDomain: "jda-tradex.firebaseapp.com",
+      databaseURL: "https://jda-tradex-default-rtdb.firebaseio.com",
+      projectId: "jda-tradex",
+      storageBucket: "jda-tradex.firebasestorage.app",
+      messagingSenderId: "171375297732",
+      appId: "1:171375297732:web:1075542efff75dd7ce3591"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let variablesGlobales = {
+        usdt_ves: 46.20, ganancia_casa: 6.0, ganancia_vendedor: 0.0,
+        usd_ve: 46.20, usd_ve_cli: 43.428, brl_ve: 8.55, brl_ve_cli: 8.037, do_ve: 0.789, do_ve_cli: 0.741,
+        co_ve: 0.0116, co_ve_cli: 0.0109, pen_ve: 12.38, pen_ve_cli: 11.637, clp_ve: 0.0507, clp_ve_cli: 0.0476,
+        ecd_ve: 46.20, ecd_ve_cli: 43.428, mxn_ve: 2.59, mxn_ve_cli: 2.434, pan_ve: 46.20, pan_ve_cli: 43.428,
+        ve_usd: 0.022, ve_usd_cli: 0.0206, ve_brl: 0.12, ve_brl_cli: 0.1128, ve_dop: 1.26, ve_dop_cli: 1.1844,
+        ve_cop: 85.5, ve_cop_cli: 80.37, ve_pen: 0.081, ve_pen_cli: 0.0761, ve_clp: 19.5, ve_clp_cli: 18.33,
+        ve_ecd: 0.022, ve_ecd_cli: 0.0206, ve_mxn: 0.38, ve_mxn_cli: 0.3572, ve_pan: 0.022, ve_pan_cli: 0.0206,
+        inputs: { usa: 1.00, br: 5.40, do: 58.50, co: 3950, pe: 3.73, cl: 910, ec: 1.00, mx: 17.80, pa: 1.00, out_usa: 0.022, out_br: 0.12, out_do: 1.26, out_co: 85.5, out_pe: 0.081, out_cl: 19.5, out_ec: 0.022, out_mx: 0.38, out_pa: 0.022 }
+    };
+
+    let historialRemesas = [];
+    let listaPrestamos = [];
+    let historialPrestamos = [];
+    let listaClientes = [];
+    let historialCaja = [];
+    let listaBancos = [];
+    let baseAperturaCajaGlobal = 0.00;
+
+    window.addEventListener('DOMContentLoaded', () => {
+        if(localStorage.getItem("tradex_sesion_activa") && localStorage.getItem("tradex_rol_activo")) { 
+            desplegarDashboard(localStorage.getItem("tradex_sesion_activa"), localStorage.getItem("tradex_rol_activo")); 
+        }
+
+        onValue(ref(db, 'config_tasas'), (snapshot) => {
+            if (snapshot.exists()) {
+                variablesGlobales = snapshot.val();
+                if(variablesGlobales.ganancia_vendedor === undefined) variablesGlobales.ganancia_vendedor = 0.0;
+                cargarInputsDesdeMemoria();
+                autoCalcularEstructuraCompleta(false);
+                renderizarTablaRemesas();
+            }
+        });
+
+        onValue(ref(db, 'clientes'), (snapshot) => {
+            listaClientes = [];
+            if (snapshot.exists()) {
+                Object.entries(snapshot.val()).forEach(([key, value]) => {
+                    listaClientes.push({ firebaseUrlKey: key, ...value });
+                });
+            }
+            renderizarTablaClientes();
+            sconizarSelectoresDeClientes();
+        });
+
+        onValue(ref(db, 'remesas'), (snapshot) => {
+            historialRemesas = [];
+            if (snapshot.exists()) {
+                Object.entries(snapshot.val()).forEach(([key, value]) => {
+                    historialRemesas.push({ firebaseUrlKey: key, ...value });
+                });
+                historialRemesas.reverse();
+            }
+            renderizarTablaRemesas();
+            calcularGananciasDelDia();
+        });
+
+        onValue(ref(db, 'prestamos'), (snapshot) => {
+            listaPrestamos = [];
+            if (snapshot.exists()) {
+                Object.entries(snapshot.val()).forEach(([key, value]) => {
+                    listaPrestamos.push({ firebaseUrlKey: key, ...value });
+                });
+            }
+            renderizarTablaPréstamos();
+            calcularGananciasDelDia();
+        });
+
+        onValue(ref(db, 'prestamos_historial'), (snapshot) => {
+            historialPrestamos = [];
+            if(snapshot.exists()) {
+                Object.entries(snapshot.val()).forEach(([key, value]) => {
+                    historialPrestamos.push({ firebaseUrlKey: key, ...value });
+                });
+                historialPrestamos.reverse();
+            }
+            renderizarTablaHistorialPrestamos();
+        });
+
+        onValue(ref(db, 'caja_diaria'), (snapshot) => {
+            historialCaja = [];
+            if (snapshot.exists()) {
+                Object.entries(snapshot.val()).forEach(([key, value]) => {
+                    historialCaja.push({ firebaseUrlKey: key, ...value });
+                });
+            }
+            renderizarTablaCaja();
+        });
+
+        onValue(ref(db, 'caja_apertura_base'), (snapshot) => {
+            if (snapshot.exists()) {
+                baseAperturaCajaGlobal = parseFloat(snapshot.val()) || 0;
+                const inputApertura = document.getElementById('cj-apertura');
+                if(inputApertura) inputApertura.value = baseAperturaCajaGlobal;
+                calcularFlujoCajaTotal();
+            }
+        });
+
+        onValue(ref(db, 'bancos'), (snapshot) => {
+            listaBancos = [];
+            if (snapshot.exists()) {
+                Object.entries(snapshot.val()).forEach(([key, value]) => {
+                    listaBancos.push({ firebaseUrlKey: key, ...value });
+                });
+            }
+            renderizarTablaBancos();
+        });
+    });
+
+    window.validarAccesoGlobal = function(event) {
+        event.preventDefault();
+        const userIn = document.getElementById("username").value.trim().toLowerCase();
+        const passIn = document.getElementById("password").value;
+        let autenticado = false; let nombre = ""; let rol = "";
+
+        if ((userIn === "admin" && passIn === "jdaseguro2026") || (userIn === "daniel" && passIn === "tradex2026")) {
+            autenticado = true; nombre = "Daniel (Admin)"; rol = "Administrador";
+        } else if (userIn === "vendedor" && passIn === "tradex01") {
+            autenticado = true; nombre = "Operador Ventas"; rol = "Vendedor";
+        }
+
+        if (autenticado) {
+            localStorage.setItem("tradex_sesion_activa", nombre);
+            localStorage.setItem("tradex_rol_activo", rol);
+            desplegarDashboard(nombre, rol);
+        } else {
+            document.getElementById("error-msg").style.display = "block";
+        }
+    }
+
+    window.desplegarDashboard = function(nombre, rol) {
+        document.getElementById("login-container").style.display = "none";
+        document.getElementById("app-container").style.display = "block";
+        document.getElementById("session-role-badge").innerText = rol;
+        document.getElementById('today-date').innerText = new Date().toLocaleDateString('es-VE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        const campoTasa = document.getElementById('rm-tasa');
+        const campoGananciaVendedorManual = document.getElementById('rm-ganancia-vendedor-manual');
+        const thAcciones = document.getElementById('th-acciones-admin');
+        const mTrigger = document.getElementById('m-nav-admin-trigger');
+        const btnVerGananciaVend = document.getElementById('btn-ver-ganancia-vendedor');
+
+        if(rol === "Vendedor") {
+            document.getElementById("nav-section-admin-finanzas").style.display = "none";
+            document.getElementById("nav-section-admin-config").style.display = "none";
+            document.getElementById("m-nav-caja").style.display = "none";
+            if(btnVerGananciaVend) btnVerGananciaVend.style.display = "none";
+            if(mTrigger) mTrigger.style.display = "none";
+            if(campoTasa) { campoTasa.readOnly = true; campoTasa.classList.add('bloqueado-vendedor'); }
+            if(campoGananciaVendedorManual) { campoGananciaVendedorManual.readOnly = true; campoGananciaVendedorManual.classList.add('bloqueado-vendedor'); }
+            if(thAcciones) thAcciones.style.display = "none";
+        } else {
+            document.getElementById("nav-section-admin-finanzas").style.display = "block";
+            document.getElementById("nav-section-admin-config").style.display = "block";
+            document.getElementById("m-nav-caja").style.display = "flex";
+            if(btnVerGananciaVend) btnVerGananciaVend.style.display = "inline-flex";
+            if(mTrigger) mTrigger.style.display = "flex";
+            if(campoTasa) { campoTasa.readOnly = false; campoTasa.classList.remove('bloqueado-vendedor'); }
+            if(campoGananciaVendedorManual) { campoGananciaVendedorManual.readOnly = false; campoGananciaVendedorManual.classList.remove('bloqueado-vendedor'); }
+            if(thAcciones) thAcciones.style.display = "table-cell";
+        }
+        renderizarTablaRemesas();
+    }
+
+    window.ejecutarCerrarSesionGlobal = function() {
+        localStorage.removeItem("tradex_sesion_activa");
+        localStorage.removeItem("tradex_rol_activo");
+        document.getElementById("app-container").style.display = "none";
+        document.getElementById("login-container").style.display = "flex";
+    }
+
+    window.toggleAdminDrawer = function() { document.getElementById('mobile-admin-drawer').classList.toggle('open'); }
+
+    window.goto = function(pageId, element) {
+        document.getElementById('mobile-admin-drawer').classList.remove('open');
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.querySelectorAll('.mobile-nav-item').forEach(m => m.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active');
+        if(element && element.classList) element.classList.add('active');
+        const mButton = document.getElementById('m-nav-' + pageId);
+        if(mButton) mButton.classList.add('active');
+        else if(['prestamos','bancos','config'].includes(pageId)) document.getElementById('m-nav-admin-trigger').classList.add('active');
+    }
+
+    window.gotoMobile = function(pageId) { const iDummy = document.createElement('div'); window.goto(pageId, iDummy); }
+
+    window.autoCalcularEstructuraCompleta = function(escribirFirebase = true) {
+        const refUsdtInput = document.getElementById('calc-ref-usdt');
+        if(!refUsdtInput) return;
+
+        const refUsdt = parseFloat(refUsdtInput.value) || 46.20;
+        const gc = parseFloat(document.getElementById('cfg-ganancia-casa').value) || 6.0;
+        const gv = parseFloat(document.getElementById('cfg-ganancia-vendedor').value) || 0.0;
+        const f = (100 - gc - gv) / 100;
+
+        variablesGlobales.usdt_ves = refUsdt;
+        variablesGlobales.ganancia_casa = gc;
+        variablesGlobales.ganancia_vendedor = gv;
+
+        variablesGlobales.inputs = {
+            usa: parseFloat(document.getElementById('calc-ref-usa').value) || 1.0,
+            br: parseFloat(document.getElementById('calc-ref-br').value) || 5.4,
+            do: parseFloat(document.getElementById('calc-ref-do').value) || 58.5,
+            co: parseFloat(document.getElementById('calc-ref-co').value) || 3950,
+            pe: parseFloat(document.getElementById('calc-ref-pe').value) || 3.73,
+            cl: parseFloat(document.getElementById('calc-ref-cl').value) || 910,
+            ec: parseFloat(document.getElementById('calc-ref-ec').value) || 1.0,
+            mx: parseFloat(document.getElementById('calc-ref-mx').value) || 17.8,
+            pa: parseFloat(document.getElementById('calc-ref-pa').value) || 1.0,
+            out_usa: parseFloat(document.getElementById('calc-out-usa').value) || 0.022,
+            out_br: parseFloat(document.getElementById('calc-out-br').value) || 0.12,
+            out_do: parseFloat(document.getElementById('calc-out-do').value) || 1.26,
+            out_co: parseFloat(document.getElementById('calc-out-co').value) || 85.5,
+            out_pe: parseFloat(document.getElementById('calc-out-pe').value) || 0.081,
+            out_cl: parseFloat(document.getElementById('calc-out-cl').value) || 19.5,
+            out_ec: parseFloat(document.getElementById('calc-out-ec').value) || 0.022,
+            out_mx: parseFloat(document.getElementById('calc-out-mx').value) || 0.38,
+            out_pa: parseFloat(document.getElementById('calc-out-pa').value) || 0.022
+        };
+
+        variablesGlobales.usd_ve = refUsdt / variablesGlobales.inputs.usa; variablesGlobales.usd_ve_cli = variablesGlobales.usd_ve * f;
+        variablesGlobales.brl_ve = refUsdt / variablesGlobales.inputs.br;  variablesGlobales.brl_ve_cli = variablesGlobales.brl_ve * f;
+        variablesGlobales.do_ve = refUsdt / variablesGlobales.inputs.do;   variablesGlobales.do_ve_cli = variablesGlobales.do_ve * f;
+        variablesGlobales.co_ve = refUsdt / variablesGlobales.inputs.co;   variablesGlobales.co_ve_cli = variablesGlobales.co_ve * f;
+        variablesGlobales.pen_ve = refUsdt / variablesGlobales.inputs.pe;  variablesGlobales.pen_ve_cli = variablesGlobales.pen_ve * f;
+        variablesGlobales.clp_ve = refUsdt / variablesGlobales.inputs.cl;  variablesGlobales.clp_ve_cli = variablesGlobales.clp_ve * f;
+        variablesGlobales.ecd_ve = refUsdt / variablesGlobales.inputs.ec;  variablesGlobales.ecd_ve_cli = variablesGlobales.ecd_ve * f;
+        variablesGlobales.mxn_ve = refUsdt / variablesGlobales.inputs.mx;  variablesGlobales.mxn_ve_cli = variablesGlobales.mxn_ve * f;
+        variablesGlobales.pan_ve = refUsdt / variablesGlobales.inputs.pa;  variablesGlobales.pan_ve_cli = variablesGlobales.pan_ve * f;
+
+        variablesGlobales.ve_usd = variablesGlobales.inputs.out_usa; variablesGlobales.ve_usd_cli = variablesGlobales.ve_usd * f;
+        variablesGlobales.ve_brl = variablesGlobales.inputs.out_br;  variablesGlobales.ve_brl_cli = variablesGlobales.ve_brl * f;
+        variablesGlobales.ve_dop = variablesGlobales.inputs.out_do;  variablesGlobales.ve_dop_cli = variablesGlobales.ve_dop * f;
+        variablesGlobales.ve_cop = variablesGlobales.inputs.out_co;  variablesGlobales.ve_cop_cli = variablesGlobales.ve_cop * f;
+        variablesGlobales.ve_pen = variablesGlobales.inputs.out_pe;  variablesGlobales.ve_pen_cli = variablesGlobales.ve_pen * f;
+        variablesGlobales.ve_clp = variablesGlobales.inputs.out_cl;  variablesGlobales.ve_clp_cli = variablesGlobales.ve_clp * f;
+        variablesGlobales.ve_ecd = variablesGlobales.inputs.out_ec;  variablesGlobales.ve_ecd_cli = variablesGlobales.ve_ecd * f;
+        variablesGlobales.ve_mxn = variablesGlobales.inputs.out_mx;  variablesGlobales.ve_mxn_cli = variablesGlobales.ve_mxn * f;
+        variablesGlobales.ve_pan = variablesGlobales.inputs.out_pa;  variablesGlobales.ve_pan_cli = variablesGlobales.ve_pan * f;
+
+        actualizarCamposTextoInformativos();
+    }
+
+    function actualizarCamposTextoInformativos() {
+        if(!document.getElementById('lbl-usa-real')) return;
+        
+        document.getElementById('lbl-usa-real').value = "Real: " + variablesGlobales.usd_ve.toFixed(4) + " Bs.";
+        document.getElementById('lbl-usa-cli').value  = "Cliente: " + variablesGlobales.usd_ve_cli.toFixed(4) + " Bs.";
+        document.getElementById('lbl-brl-real').value = "Real: " + variablesGlobales.brl_ve.toFixed(4) + " Bs.";
+        document.getElementById('lbl-brl-cli').value  = "Cliente: " + variablesGlobales.brl_ve_cli.toFixed(4) + " Bs.";
+        document.getElementById('lbl-do-real').value  = "Real: " + variablesGlobales.do_ve.toFixed(4) + " Bs.";
+        document.getElementById('lbl-do-cli').value   = "Cliente: " + variablesGlobales.do_ve_cli.toFixed(4) + " Bs.";
+        document.getElementById('lbl-co-real').value  = "Real: " + variablesGlobales.co_ve.toFixed(5) + " Bs.";
+        document.getElementById('lbl-co-cli').value   = "Cliente: " + variablesGlobales.co_ve_cli.toFixed(5) + " Bs.";
+        document.getElementById('lbl-pen-real').value = "Real: " + variablesGlobales.pen_ve.toFixed(4) + " Bs.";
+        document.getElementById('lbl-pen-cli').value  = "Cliente: " + variablesGlobales.pen_ve_cli.toFixed(4) + " Bs.";
+        document.getElementById('lbl-clp-real').value = "Real: " + variablesGlobales.clp_ve.toFixed(5) + " Bs.";
+        document.getElementById('lbl-clp-cli').value  = "Cliente: " + variablesGlobales.clp_ve_cli.toFixed(5) + " Bs.";
+        document.getElementById('lbl-ecd-real').value = "Real: " + variablesGlobales.ecd_ve.toFixed(4) + " Bs.";
+        document.getElementById('lbl-ecd-cli').value  = "Cliente: " + variablesGlobales.ecd_ve_cli.toFixed(4) + " Bs.";
+        document.getElementById('lbl-mxn-real').value = "Real: " + variablesGlobales.mxn_ve.toFixed(4) + " Bs.";
+        document.getElementById('lbl-mxn-cli').value  = "Cliente: " + variablesGlobales.mxn_ve_cli.toFixed(4) + " Bs.";
+        document.getElementById('lbl-pan-real').value = "Real: " + variablesGlobales.pan_ve.toFixed(4) + " Bs.";
+        document.getElementById('lbl-pan-cli').value  = "Cliente: " + variablesGlobales.pan_ve_cli.toFixed(4) + " Bs.";
+
+        document.getElementById('lbl-ve-usd-real').value = "Real: " + variablesGlobales.ve_usd.toFixed(4);
+        document.getElementById('lbl-ve-usd-cli').value  = "Cliente: " + variablesGlobales.ve_usd_cli.toFixed(4);
+        document.getElementById('lbl-ve-brl-real').value = "Real: " + variablesGlobales.ve_brl.toFixed(4);
+        document.getElementById('lbl-ve-brl-cli').value  = "Cliente: " + variablesGlobales.ve_brl_cli.toFixed(4);
+        document.getElementById('lbl-ve-dop-real').value = "Real: " + variablesGlobales.ve_dop.toFixed(4);
+        document.getElementById('lbl-ve-dop-cli').value  = "Cliente: " + variablesGlobales.ve_dop_cli.toFixed(4);
+        document.getElementById('lbl-ve-cop-real').value = "Real: " + variablesGlobales.ve_cop.toFixed(2);
+        document.getElementById('lbl-ve-cop-cli').value  = "Cliente: " + variablesGlobales.ve_cop_cli.toFixed(2);
+        document.getElementById('lbl-ve-pen-real').value = "Real: " + variablesGlobales.ve_pen.toFixed(4);
+        document.getElementById('lbl-ve-pen-cli').value  = "Cliente: " + variablesGlobales.ve_pen_cli.toFixed(4);
+        document.getElementById('lbl-ve-clp-real').value = "Real: " + variablesGlobales.ve_clp.toFixed(2);
+        document.getElementById('lbl-ve-clp-cli').value  = "Cliente: " + variablesGlobales.ve_clp_cli.toFixed(2);
+        document.getElementById('lbl-ve-ecd-real').value = "Real: " + variablesGlobales.ve_ecd.toFixed(4);
+        document.getElementById('lbl-ve-ecd-cli').value  = "Cliente: " + variablesGlobales.ve_ecd_cli.toFixed(4);
+        document.getElementById('lbl-ve-mxn-real').value = "Real: " + variablesGlobales.ve_mxn.toFixed(4);
+        document.getElementById('lbl-ve-mxn-cli').value  = "Cliente: " + variablesGlobales.ve_mxn_cli.toFixed(4);
+        document.getElementById('lbl-ve-pan-real').value = "Real: " + variablesGlobales.ve_pan.toFixed(4);
+        document.getElementById('lbl-ve-pan-cli').value  = "Cliente: " + variablesGlobales.ve_pan_cli.toFixed(4);
+
+        if(document.getElementById('dash-usdt-static')) {
+            document.getElementById('dash-usdt-static').innerText = "Bs. " + variablesGlobales.usdt_ves.toFixed(2);
+        }
+    }
+
+    function cargarInputsDesdeMemoria() {
+        if(!document.getElementById('calc-ref-usdt')) return;
+        document.getElementById('calc-ref-usdt').value = variablesGlobales.usdt_ves;
+        document.getElementById('cfg-ganancia-casa').value = variablesGlobales.ganancia_casa;
+        document.getElementById('cfg-ganancia-vendedor').value = variablesGlobales.ganancia_vendedor || 0.0;
+
+        const i = variablesGlobales.inputs || {};
+        if(i.usa) document.getElementById('calc-ref-usa').value = i.usa;
+        if(i.br) document.getElementById('calc-ref-br').value = i.br;
+        if(i.do) document.getElementById('calc-ref-do').value = i.do;
+        if(i.co) document.getElementById('calc-ref-co').value = i.co;
+        if(i.pe) document.getElementById('calc-ref-pe').value = i.pe;
+        if(i.cl) document.getElementById('calc-ref-cl').value = i.cl;
+        if(i.ec) document.getElementById('calc-ref-ec').value = i.ec;
+        if(i.mx) document.getElementById('calc-ref-mx').value = i.mx;
+        if(i.pa) document.getElementById('calc-ref-pa').value = i.pa;
+
+        if(i.out_usa) document.getElementById('calc-out-usa').value = i.out_usa;
+        if(i.out_br) document.getElementById('calc-out-br').value = i.out_br;
+        if(i.out_do) document.getElementById('calc-out-do').value = i.out_do;
+        if(i.out_co) document.getElementById('calc-out-co').value = i.out_co;
+        if(i.out_pe) document.getElementById('calc-out-pe').value = i.out_pe;
+        if(i.out_cl) document.getElementById('calc-out-cl').value = i.out_cl;
+        if(i.out_ec) document.getElementById('calc-out-ec').value = i.out_ec;
+        if(i.out_mx) document.getElementById('calc-out-mx').value = i.out_mx;
+        if(i.out_pa) document.getElementById('calc-out-pa').value = i.out_pa;
+    }
+
+    window.guardarConfigTasas = function() {
+        autoCalcularEstructuraCompleta(false);
+        set(ref(db, 'config_tasas'), variablesGlobales)
+            .then(() => pushNotification("⚙️ Cotizaciones sincronizadas en Firebase de forma maestra."))
+            .catch(err => console.error("Error al guardar tasas: ", err));
+    }
+
+    window.onTrayectoChange = function() {
+        const trayecto = document.getElementById('rm-trayecto').value;
+        let sym = "$"; let tr = 0; let tc = 0;
+        
+        switch(trayecto) {
+            case "USA_VE": sym = "$"; tr = variablesGlobales.usd_ve; tc = variablesGlobales.usd_ve_cli; break;
+            case "BRL_VE": sym = "R$"; tr = variablesGlobales.brl_ve; tc = variablesGlobales.brl_ve_cli; break;
+            case "DOP_VE": sym = "RD$"; tr = variablesGlobales.do_ve; tc = variablesGlobales.do_ve_cli; break;
+            case "COP_VE": sym = "Col$"; tr = variablesGlobales.co_ve; tc = variablesGlobales.co_ve_cli; break;
+            case "PEN_VE": sym = "S/"; tr = variablesGlobales.pen_ve; tc = variablesGlobales.pen_ve_cli; break;
+            case "CLP_VE": sym = "Ch$"; tr = variablesGlobales.clp_ve; tc = variablesGlobales.clp_ve_cli; break;
+            case "ECD_VE": sym = "$"; tr = variablesGlobales.ecd_ve; tc = variablesGlobales.ecd_ve_cli; break;
+            case "MXN_VE": sym = "Mex$"; tr = variablesGlobales.mxn_ve; tc = variablesGlobales.mxn_ve_cli; break;
+            case "PAN_VE": sym = "$"; tr = variablesGlobales.pan_ve; tc = variablesGlobales.pan_ve_cli; break;
+            
+            case "VE_USA": sym = "Bs"; tr = variablesGlobales.ve_usd; tc = variablesGlobales.ve_usd_cli; break;
+            case "VE_BRL": sym = "Bs"; tr = variablesGlobales.ve_brl; tc = variablesGlobales.ve_brl_cli; break;
+            case "VE_DOP": sym = "Bs"; tr = variablesGlobales.ve_dop; tc = variablesGlobales.ve_dop_cli; break;
+            case "VE_COP": sym = "Bs"; tr = variablesGlobales.ve_cop; tc = variablesGlobales.ve_cop_cli; break;
+            case "VE_PEN": sym = "Bs"; tr = variablesGlobales.ve_pen; tc = variablesGlobales.ve_pen_cli; break;
+            case "VE_CLP": sym = "Bs"; tr = variablesGlobales.ve_clp; tc = variablesGlobales.ve_clp_cli; break;
+            case "VE_ECD": sym = "Bs"; tr = variablesGlobales.ve_ecd; tc = variablesGlobales.ve_ecd_cli; break;
+            case "VE_MXN": sym = "Bs"; tr = variablesGlobales.ve_mxn; tc = variablesGlobales.ve_mxn_cli; break;
+            case "VE_PAN": sym = "Bs"; tr = variablesGlobales.ve_pan; tc = variablesGlobales.ve_pan_cli; break;
+        }
+        
+        document.getElementById('rm-sym').innerText = sym;
+        document.getElementById('rm-tasa-real').value = tr;
+        document.getElementById('rm-tasa').value = tc;
+        document.getElementById('rm-ganancia-vendedor-manual').value = variablesGlobales.ganancia_vendedor || 0.0;
+        window.calcRemesa();
+    }
+
+    window.calcRemesa = function() {
+        const monto = parseFloat(document.getElementById('rm-monto').value) || 0;
+        const tasaCli = parseFloat(document.getElementById('rm-tasa').value) || 0;
+        const tasaRealMercado = parseFloat(document.getElementById('rm-tasa-real').value) || 0;
+        const trayecto = document.getElementById('rm-trayecto').value;
+        const usdtVes = variablesGlobales.usdt_ves || 46.20;
+        const gvManual = parseFloat(document.getElementById('rm-ganancia-vendedor-manual').value) || 0;
+
+        if (monto <= 0) {
+            document.getElementById('rm-neto').value = 0;
+            document.getElementById('rm-usdt-ref').value = "0.00 USDT";
+            document.getElementById('rm-usdt-admin').value = "0.00 USDT";
+            return;
+        }
+
+        document.getElementById('rm-neto').value = (monto * tasaCli).toFixed(2);
+
+        let totalUSDT = trayecto.startsWith("VE_") ? (monto / usdtVes) : ((monto * tasaRealMercado) / usdtVes);
+        if(totalUSDT < 0 || isNaN(totalUSDT)) totalUSDT = 0;
+        document.getElementById('rm-usdt-ref').value = totalUSDT.toFixed(2) + " USDT";
+        
+        const porcentajeCasaConfig = variablesGlobales.ganancia_casa || 6.0;
+        const totalComisionOperacionUSDT = totalUSDT * (porcentajeCasaConfig / 100);
+        
+        const comisionVendedorUSDT = totalUSDT * (gvManual / 100);
+        const totalAdminUSDT = totalComisionOperacionUSDT - comisionVendedorUSDT;
+        
+        document.getElementById('rm-usdt-admin').value = totalAdminUSDT.toFixed(2) + " USDT";
+    }
+
+    window.openModal = function(id) { document.getElementById(id).classList.add('open'); }
+    window.closeModal = function(id) { document.getElementById(id).classList.remove('open'); }
+    window.abrirModalRemesa = function() { window.sconizarSelectoresDeClientes(); window.onTrayectoChange(); window.openModal('modal-remesa'); }
+    window.abrirModalPrestamo = function() { window.sconizarSelectoresDeClientes(); window.openModal('modal-prestamo'); }
+
+    window.guardarRemesa = function() {
+        const monto = parseFloat(document.getElementById('rm-monto').value) || 0;
+        const destinoInfo = document.getElementById('rm-dest').value.trim();
+        const nroCuentaCliente = document.getElementById('rm-cuenta-cliente').value.trim();
+        if(monto <= 0 || !destinoInfo) { alert("Complete los datos obligatorios."); return; }
+
+        const rolActivo = localStorage.getItem("tradex_rol_activo") || "Administrador";
+        const ahora = new Date();
+        const fechaStr = grandmaFechaString(ahora);
+        const horaStr = ahora.toLocaleTimeString('es-VE', {hour: '2-digit', minute:'2-digit', hour12: true});
+
+        const gvManual = parseFloat(document.getElementById('rm-ganancia-vendedor-manual').value) || 0;
+        const usdtRefTexto = document.getElementById('rm-usdt-ref').value;
+        const totalUSDTCalculado = parseFloat(usdtRefTexto) || 0;
+        const gananciaVendedorUSDT = totalUSDTCalculado * (gvManual / 100);
+
+        const nuevaRemesa = {
+            id: "TRX-" + Math.floor(1000 + Math.random() * 9000),
+            hora: `${fechaStr} ${horaStr}`,
+            trayecto: document.getElementById('rm-trayecto').value,
+            monto: monto, 
+            neto: parseFloat(document.getElementById('rm-neto').value) || 0,
+            cliente: document.getElementById('rm-remitente').value, 
+            cuenta_cliente: nroCuentaCliente || "No Asignada", 
+            destino: destinoInfo,
+            usdtAdmin: document.getElementById('rm-usdt-admin').value, 
+            usdtVendedor: gananciaVendedorUSDT.toFixed(2) + " USDT",
+            estado: "Procesando",
+            creadoPor: rolActivo
+        };
+
+        push(ref(db, 'remesas'), nuevaRemesa)
+            .then(() => {
+                document.getElementById('rm-cuenta-cliente').value = "";
+                window.closeModal('modal-remesa');
+                pushNotification("✨ Orden de remesa registrada en la nube.");
+            });
+    }
+
+    function grandmaFechaString(dateObj) {
+        return dateObj.toLocaleDateString('es-VE');
+    }
+
+    window.cambiarEstadoRemesa = function(key, est) {
+        set(ref(db, `remesas/${key}/estado`), est)
+            .then(() => pushNotification(`📦 Remesa marcada como ${est}`));
+    }
+
+    let filtroRemesasActivo = "procesando";
+    window.setFiltroRemesa = function(tipo) {
+        filtroRemesasActivo = tipo;
+        window.renderizarTablaRemesas();
+    };
+
+    window.filtrarRemesasPorTexto = function() {
+        const query = document.getElementById('buscar-remesa-input').value.toLowerCase();
+        const filas = document.querySelectorAll('#remesas-tbody tr');
+        filas.forEach(fila => {
+            fila.style.display = fila.innerText.toLowerCase().includes(query) ? "" : "none";
+        });
+    };
+
+    window.renderizarTablaRemesas = function() {
+        const tbody = document.getElementById('remesas-tbody');
+        if(!tbody) return; tbody.innerHTML = "";
+        let act = 0; let comp = 0;
+        const rolActivo = localStorage.getItem("tradex_rol_activo");
+
+        const hoy = new Date();
+        const hoyStr = hoy.toLocaleDateString('es-VE');
+        const mesActual = (hoy.getMonth() + 1).toString().padStart(2, '0');
+        const anioActual = hoy.getFullYear().toString();
+
+        historialRemesas.forEach((r) => {
+            if(r.estado === "Procesando") act++; else comp++;
+
+            if (rolActivo === "Vendedor" && r.creadoPor === "Administrador") {
+                return;
+            }
+
+            if (r.hora) {
+                const partesFecha = r.hora.split(' ')[0];
+                if (filtroRemesasActivo === "procesando" && r.estado !== "Procesando") return;
+                if (filtroRemesasActivo === "hoy" && partesFecha !== hoyStr) return;
+                if (filtroRemesasActivo === "mes") {
+                    const [d, m, a] = partesFecha.split('/');
+                    if (m !== mesActual || a !== anioActual) return;
+                }
+            }
+
+            let row = document.createElement('tr');
+            let badgeClass = "badge-pendiente";
+            if (r.estado === "Procesada") badgeClass = "badge-procesada";
+            if (r.estado === "Rechazada") badgeClass = "badge-cancelada";
+
+            let accionesHTML = "";
+            if (r.estado === "Procesando") {
+                accionesHTML = `
+                    <button class="btn btn-success btn-sm" style="background-color: #4ade80 !important; color: #0a0e1a !important; font-weight: bold; padding: 5px 10px; margin-right: 5px; border: none; border-radius: 6px; cursor: pointer;" onclick="window.cambiarEstadoRemesa('${r.firebaseUrlKey}', 'Procesada')">✔ Procesar</button>
+                    <button class="btn btn-danger btn-sm" style="background-color: #fc5b5b !important; color: #ffffff !important; font-weight: bold; padding: 5px 10px; border: none; border-radius: 6px; cursor: pointer;" onclick="window.cambiarEstadoRemesa('${r.firebaseUrlKey}', 'Rechazada')">✖ Rechazar</button>
+                `;
+            } else {
+                accionesHTML = `<span style="color: var(--muted); font-size: 12px;">Archivado (${r.estado})</span>`;
+            }
+
+            row.innerHTML = `
+                <td><strong>${r.id}</strong><br><small style="color: var(--gold); font-weight: 500;">${r.hora}</small></td>
+                <td><span style="color:var(--gold); font-weight:600;">${r.trayecto}</span><br><small>${r.destino}</small><br><small style="color:var(--blue); font-weight:600;">Nro: ${r.cuenta_cliente || 'N/A'}</small></td>
+                <td>$${r.monto.toFixed(2)}</td>
+                <td><span style="color:var(--success); font-weight:bold;">Bs. ${r.neto.toFixed(2)}</span><br><small style="color:var(--purple);">Admin: ${r.usdtAdmin}</small></td>
+                <td>${r.cliente}</td>
+                <td><span class="badge ${badgeClass}">${r.estado}</span></td>
+                <td class="td-acciones-celda" style="white-space: nowrap;">${accionesHTML}</td>
+            `;
+
+            if(rolActivo === "Vendedor") { 
+                const c = row.querySelector('.td-acciones-celda'); 
+                if(c) c.innerHTML = `<span style="color: var(--muted); font-size:11px;">Solo Lectura</span>`; 
+            }
+            tbody.appendChild(row);
+        });
+        
+        if(document.getElementById('dash-hoy-val')) document.getElementById('dash-hoy-val').innerText = act;
+        if(document.getElementById('dash-mes-val')) document.getElementById('dash-mes-val').innerText = comp;
+    }
+
+    // MODIFICADO: CONTROL TOTAL E INDEPENDIZACIÓN DE MÉTRICAS OPERATIVAS DE LA CARTERA DE LIQUIDEZ
+    function calcularGananciasDelDia() {
+        const hoyStr = new Date().toLocaleDateString('es-VE');
+        let totalGananciaAdminUSDT = 0;
+        let totalGananciaVendedorUSDT = 0;
+        let totalGananciaPrestamosUSD = 0; // Acumulador exclusivo para préstamos[cite: 1]
+
+        // 1. Sumar solo las ganancias de las remesas procesadas para el Dashboard[cite: 1]
+        historialRemesas.forEach(r => {
+            if(r.estado === "Procesada" && r.hora && r.hora.split(' ')[0] === hoyStr) {
+                const gananciaUSDT = parseFloat(r.usdtAdmin) || 0;
+                totalGananciaAdminUSDT += gananciaUSDT;
+
+                const ganVended = parseFloat(r.usdtVendedor) || 0;
+                totalGananciaVendedorUSDT += ganVended;
+            }
+        });
+
+        // 2. Calcular los préstamos de forma independiente al Dashboard[cite: 1]
+        listaPrestamos.forEach(p => {
+            const capital = p.monto || 0;
+            const porcentajeInteres = p.interes || 0;
+            const gananciaInteresUSD = capital * (porcentajeInteres / 100); 
+            
+            totalGananciaPrestamosUSD += gananciaInteresUSD; // Agregado al contador autónomo[cite: 1]
+        });
+
+        // Renderizado en Dashboard (Solo Remesas)[cite: 1]
+        const boxGanancias = document.getElementById('dash-ganancias-hoy');
+        if(boxGanancias) {
+            boxGanancias.innerText = totalGananciaAdminUSDT.toFixed(2) + " USDT";
+        }
+
+        // Renderizado exclusivo en el Módulo de Préstamos[cite: 1]
+        const boxGananciasPrestamos = document.getElementById('prestamos-ganancias-acumuladas');
+        if(boxGananciasPrestamos) {
+            boxGananciasPrestamos.innerText = "$" + totalGananciaPrestamosUSD.toFixed(2) + " USD";
+        }
+
+        const modalVendedorVal = document.getElementById('total-vendedor-modal-val');
+        if(modalVendedorVal) {
+            modalVendedorVal.innerText = totalGananciaVendedorUSDT.toFixed(2) + " USDT";
+        }
+    }
+
+    window.registrarMovimientoCaja = function() {
+        const tipo = document.getElementById('cj-tipo').value;
+        const monto = parseFloat(document.getElementById('cj-monto').value) || 0;
+        const concepto = document.getElementById('cj-concepto').value.trim();
+        if(monto <= 0 || !concepto) { alert("Introduzca valores monetarios válidos."); return; }
+
+        const movimiento = {
+            hora: new Date().toLocaleTimeString('es-VE', {hour: '2-digit', minute:'2-digit'}),
+            tipo: tipo, 
+            concepto: concepto, 
+            monto: monto
+        };
+
+        push(ref(db, 'caja_diaria'), movimiento)
+            .then(() => {
+                document.getElementById('cj-monto').value = "";
+                document.getElementById('cj-concepto').value = "";
+                pushNotification(`✅ Transacción de caja indexada.`);
+            });
+    }
+
+    window.eliminarMovimientoCaja = function(key) {
+        remove(ref(db, `caja_diaria/${key}`))
+            .then(() => pushNotification("✕ Registro de caja removido."));
+    }
+
+    window.guardarBaseAperturaCaja = function() {
+        const baseApertura = parseFloat(document.getElementById('cj-apertura').value) || 0;
+        set(ref(db, 'caja_apertura_base'), baseApertura);
+    }
+
+    window.renderizarTablaCaja = function() {
+        const tbody = document.getElementById('caja-tbody');
+        if(!tbody) return; tbody.innerHTML = "";
+        historialCaja.forEach((m) => {
+            let row = document.createElement('tr');
+            let badgeColor = m.tipo === "Ingreso" ? "badge-procesada" : "badge-cancelada";
+            row.innerHTML = `<td>${m.hora}</td><td><span class="badge ${badgeColor}">${m.tipo}</span></td><td><strong>${m.concepto}</strong></td><td style="font-weight:bold; color:${m.tipo === 'Ingreso' ? 'var(--success)' : 'var(--danger)'}">Bs. ${m.monto.toFixed(2)}</td><td><button class="btn btn-danger btn-sm">✕</button></td>`;
+            
+            row.querySelector('.btn-danger').onclick = () => window.eliminarMovimientoCaja(m.firebaseUrlKey);
+            tbody.appendChild(row);
+        });
+        window.calcularFlujoCajaTotal();
+    }
+
+    window.calcularFlujoCajaTotal = function() {
+        let ing = 0; let eg = 0;
+        historialCaja.forEach(m => { if(m.tipo === "Ingreso") ing += m.monto; else eg += m.monto; });
+        document.getElementById('total-ingresos-box').innerText = "Bs. " + ing.toFixed(2);
+        document.getElementById('total-egresos-box').innerText = "Bs. " + eg.toFixed(2);
+        document.getElementById('saldo-caja-box').innerText = "Bs. " + (baseAperturaCajaGlobal + ing - eg).toFixed(2);
+    }
+
+    window.guardarNuevoCliente = function() {
+        const nom = document.getElementById('cl-nombre').value.trim();
+        if(!nom) return;
+
+        const nuevoCliente = {
+            nombre: nom, 
+            cedula: document.getElementById('cl-cedula').value, 
+            telefono: document.getElementById('cl-telefono').value, 
+            pais: document.getElementById('cl-pais').value, 
+            banco: document.getElementById('cl-banco').value
+        };
+
+        push(ref(db, 'clientes'), nuevoCliente)
+            .then(() => {
+                window.closeModal('modal-cliente');
+                pushNotification("👥 Ficha de cliente archivada.");
+            });
+    }
+
+    window.renderizarTablaClientes = function() {
+        const tbody = document.getElementById('clientes-tbody');
+        if(!tbody) return; tbody.innerHTML = "";
+        listaClientes.forEach(c => {
+            let row = document.createElement('tr');
+            row.innerHTML = `<td><strong>${c.nombre}</strong></td><td>${c.cedula}</td><td>${c.telefono}</td><td>${c.pais}</td><td><small>${c.banco}</small></td>`;
+            tbody.appendChild(row);
+        });
+    }
+
+    window.guardarNuevoPrestamo = function() {
+        const cap = parseFloat(document.getElementById('pr-monto').value) || 0;
+        const f = document.getElementById('pr-vencimiento').value;
+        if(cap <= 0 || !f) { alert("Ingrese el capital y la fecha límite."); return; }
+
+        const nuevoPrestamo = {
+            cliente: document.getElementById('pr-cliente').value, 
+            monto: cap, 
+            interes: parseFloat(document.getElementById('pr-interes').value) || 0, 
+            vencimiento: f, 
+            estado: "Pendiente"
+        };
+
+        push(ref(db, 'prestamos'), nuevoPrestamo)
+            .then(() => {
+                const ahora = new Date();
+                const logTransaccion = {
+                    hora: `${ahora.toLocaleDateString('es-VE')} ${ahora.toLocaleTimeString('es-VE', {hour:'2-digit', minute:'2-digit'})}`,
+                    cliente: nuevoPrestamo.cliente,
+                    accion: "Apertura Préstamo",
+                    monto: cap,
+                    interes: nuevoPrestamo.interes
+                };
+                push(ref(db, 'prestamos_historial'), logTransaccion);
+                window.closeModal('modal-prestamo');
+                pushNotification("💳 Capital e interés de préstamo guardado.");
+            });
+    }
+
+    window.liquidarPrestamo = function(key) {
+        let prestamoEncontrado = listaPrestamos.find(p => p.firebaseUrlKey === key);
+        remove(ref(db, `prestamos/${key}`))
+            .then(() => {
+                if(prestamoEncontrado) {
+                    const ahora = new Date();
+                    const logTransaccion = {
+                        hora: `${ahora.toLocaleDateString('es-VE')} ${ahora.toLocaleTimeString('es-VE', {hour:'2-digit', minute:'2-digit'})}`,
+                        cliente: prestamoEncontrado.cliente,
+                        accion: "Liquidado / Cerrado",
+                        monto: prestamoEncontrado.monto,
+                        interes: prestamoEncontrado.interes
+                    };
+                    push(ref(db, 'prestamos_historial'), logTransaccion);
+                }
+                pushNotification("💳 Préstamo liquidado / archivado.");
+            });
+    }
+
+    window.renderizarTablaPréstamos = function() {
+        const tbody = document.getElementById('prestamos-tbody');
+        if(!tbody) return; tbody.innerHTML = "";
+        listaPrestamos.forEach((p) => {
+            let row = document.createElement('tr');
+            row.innerHTML = `<td><strong>${p.cliente}</strong></td><td>$${p.monto.toFixed(2)}</td><td>${p.interes}%</td><td>${p.vencimiento}</td><td><span class="badge badge-pendiente">${p.estado}</span></td><td><button class="btn btn-success btn-sm">Liquidar</button></td>`;
+            
+            row.querySelector('.btn-success').onclick = () => window.liquidarPrestamo(p.firebaseUrlKey);
+            tbody.appendChild(row);
+        });
+    }
+
+    window.renderizarTablaHistorialPrestamos = function() {
+        const tbody = document.getElementById('prestamos-historial-tbody');
+        if(!tbody) return; tbody.innerHTML = "";
+        historialPrestamos.forEach(h => {
+            let row = document.createElement('tr');
+            let colorAccion = h.accion.includes("Apertura") ? "var(--warning)" : "var(--success)";
+            row.innerHTML = `
+                <td><small>${h.hora}</small></td>
+                <td><strong>${h.cliente}</strong></td>
+                <td><span style="color:${colorAccion}; font-weight:bold;">${h.accion}</span></td>
+                <td>$${h.monto.toFixed(2)}</td>
+                <td>${h.interes}%</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    window.registrarBanco = function() {
+        const plat = document.getElementById('bn-plataforma').value.trim();
+        const iden = document.getElementById('bn-identificador').value.trim();
+        const saldo = parseFloat(document.getElementById('bn-saldo').value) || 0;
+
+        if(!plat || !iden) { alert("Complete los datos de la plataforma bancaria."); return; }
+
+        const nuevoBanco = { plataforma: plat, identificador: iden, saldo: saldo };
+        
+        let idExistente = null;
+        listaBancos.forEach(b => {
+            if(b.plataforma.toLowerCase() === plat.toLowerCase() && b.identificador.toLowerCase() === iden.toLowerCase()) {
+                idExistente = b.firebaseUrlKey;
+            }
+        });
+
+        if(idExistente) {
+            set(ref(db, `bancos/${idExistente}`), nuevoBanco).then(() => {
+                limpiarCamposBanco();
+                pushNotification("🏦 Banco y saldos sincronizados.");
+            });
+        } else {
+            push(ref(db, 'bancos'), nuevoBanco).then(() => {
+                limpiarCamposBanco();
+                pushNotification("🏦 Banco nuevo indexado.");
+            });
+        }
+    }
+
+    window.eliminarBanco = function(key) {
+        if(confirm("¿Desea desvincular esta cuenta bancaria?")) {
+            remove(ref(db, `bancos/${key}`)).then(() => pushNotification("🏦 Banco eliminado."));
+        }
+    }
+
+    function limpiarCamposBanco() {
+        document.getElementById('bn-plataforma').value = "";
+        document.getElementById('bn-identificador').value = "";
+        document.getElementById('bn-saldo').value = "";
+    }
+
+    window.renderizarTablaBancos = function() {
+        const tbody = document.getElementById('bancos-tbody');
+        if(!tbody) return; tbody.innerHTML = "";
+        
+        if(listaBancos.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--muted);">No hay plataformas bancarias sincronizadas</td></tr>`;
+            return;
+        }
+
+        listaBancos.forEach(b => {
+            let row = document.createElement('tr');
+            let esDolar = b.plataforma.toLowerCase().includes("zelle") || b.plataforma.toLowerCase().includes("bofa") || b.plataforma.toLowerCase().includes("chase");
+            let prefix = esDolar ? "$" : "Bs. ";
+            row.innerHTML = `
+                <td><strong>${b.plataforma}</strong></td>
+                <td>${b.identificador}</td>
+                <td style="font-weight:bold; color:var(--success);">${prefix}${b.saldo.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td><button class="btn btn-danger btn-sm">✕</button></td>
+            `;
+            row.querySelector('.btn-danger').onclick = () => window.eliminarBanco(b.firebaseUrlKey);
+            tbody.appendChild(row);
+        });
+    }
+
+    window.sconizarSelectoresDeClientes = function() {
+        document.querySelectorAll('.js-select-clientes').forEach(sel => {
+            sel.innerHTML = "";
+            listaClientes.forEach(c => {
+                let op = document.createElement('option'); op.value = c.nombre; op.innerText = `${c.nombre} (${c.cedula})`; sel.appendChild(op);
+            });
+        });
+    }
+
+    window.pushNotification = function(text) {
+        const container = document.getElementById('notification-container');
+        let toast = document.createElement('div'); toast.className = "toast-notification"; toast.innerText = text;
+        container.appendChild(toast); setTimeout(() => { toast.remove(); }, 4000);
+    }
+  </script>
+</body>
+</html>
