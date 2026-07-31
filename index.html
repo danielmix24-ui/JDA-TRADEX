@@ -1214,19 +1214,22 @@
         const tasa = parseFloat(document.getElementById('rm-tasa').value) || 0;
         const gananciaVendedorManual = parseFloat(document.getElementById('rm-ganancia-vendedor-manual').value) || 0;
         
+        // 1. Movemos la extracción de la configuración del país hacia arriba para usar su valor base
+        const key = routeKeyMap[trayecto] || "usa";
+        const cfgPais = (variablesGlobales.pais_config && variablesGlobales.pais_config[key]) ? variablesGlobales.pais_config[key] : { ml: 1, vend: 0, admin: 6 };
+
         let usdtRef = 0;
         let neto = 0;
         
         if (trayecto.endsWith("_VE")) {
             neto = monto * tasa;
-            usdtRef = neto / variablesGlobales.usdt_ves;
+            // 2. AQUI ESTÁ EL CAMBIO: Calculamos el USDT completo usando el monto original dividido por el valor real de la moneda local (ml), ignorando la tasa con comisión del cliente.
+            usdtRef = monto / cfgPais.ml;
         } else {
             neto = monto / tasa;
+            // 3. En envíos desde VE hacia afuera, el monto original entra en Bs, así que su equivalente en USDT completo se obtiene dividiéndolo entre la tasa global USDT.
             usdtRef = monto / variablesGlobales.usdt_ves;
         }
-
-        const key = routeKeyMap[trayecto] || "usa";
-        const cfgPais = (variablesGlobales.pais_config && variablesGlobales.pais_config[key]) ? variablesGlobales.pais_config[key] : { ml: 1, vend: 0, admin: 6 };
         
         const pctAdmin = cfgPais.admin || 0;
         const usdtAdmin = usdtRef * (pctAdmin / 100);
@@ -1238,7 +1241,7 @@
         document.getElementById('rm-usdt-admin').value = usdtAdmin.toFixed(2) + " USDT";
         document.getElementById('rm-enviar-admin-neto').value = enviarAdminNeto.toFixed(2) + " USDT";
         document.getElementById('rm-neto').value = neto.toFixed(2);
-    };
+        };
 
     function cargarInputsDesdeMemoria() {
         if(!document.getElementById('calc-ref-usdt')) return;
