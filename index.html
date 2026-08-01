@@ -1346,8 +1346,8 @@
         }
 
         document.getElementById('rm-sym').innerText = sym;
-        document.getElementById('rm-tasa-real').value = (tr || 0).toFixed(4);
-        document.getElementById('rm-tasa').value = (tc || 0).toFixed(4);
+        document.getElementById('rm-tasa-real').value = (tr || 0).toFixed(2);
+        document.getElementById('rm-tasa').value = (tc || 0).toFixed(2);
         document.getElementById('rm-ganancia-vendedor-manual').value = cfgPais.vend || 0;
         calcRemesa();
     };
