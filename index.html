@@ -1145,62 +1145,67 @@
     window.gotoMobile = function(pageId) { const iDummy = document.createElement('div'); window.goto(pageId, iDummy); };
 
     window.autoCalcularEstructuraCompleta = function(escribirFirebase = true) {
-        const refUsdtInput = document.getElementById('calc-ref-usdt');
-        if(!refUsdtInput) return;
+    const refUsdtInput = document.getElementById('calc-ref-usdt');
+    if(!refUsdtInput) return;
 
-        const refUsdt = parseFloat(refUsdtInput.value) || 46.20;
-        variablesGlobales.usdt_ves = refUsdt;
+    const refUsdt = parseFloat(refUsdtInput.value) || 46.20;
+    variablesGlobales.usdt_ves = refUsdt;
 
-        if(!variablesGlobales.pais_config) variablesGlobales.pais_config = {};
+    if(!variablesGlobales.pais_config) variablesGlobales.pais_config = {};
 
-        const codigosPaises = [
-          { key: 'usa', idMl: 'calc-ref-usa', idVend: 'cfg-vend-usa', idAdmin: 'cfg-admin-usa', lblReal: 'lbl-usa-real', lblCli: 'lbl-usa-cli', varReal: 'usd_ve', varCli: 'usd_ve_cli', out: false },
-          { key: 'br',  idMl: 'calc-ref-br',  idVend: 'cfg-vend-br',  idAdmin: 'cfg-admin-br',  lblReal: 'lbl-brl-real', lblCli: 'lbl-brl-cli', varReal: 'brl_ve', varCli: 'brl_ve_cli', out: false },
-          { key: 'do',  idMl: 'calc-ref-do',  idVend: 'cfg-vend-do',  idAdmin: 'cfg-admin-do',  lblReal: 'lbl-do-real',  lblCli: 'lbl-do-cli',  varReal: 'do_ve',  varCli: 'do_ve_cli',  out: false },
-          { key: 'co',  idMl: 'calc-ref-co',  idVend: 'cfg-vend-co',  idAdmin: 'cfg-admin-co',  lblReal: 'lbl-co-real',  lblCli: 'lbl-co-cli',  varReal: 'co_ve',  varCli: 'co_ve_cli',  out: false },
-          { key: 'pe',  idMl: 'calc-ref-pe',  idVend: 'cfg-vend-pe',  idAdmin: 'cfg-admin-pe',  lblReal: 'lbl-pen-real', lblCli: 'lbl-pen-cli', varReal: 'pen_ve', varCli: 'pen_ve_cli', out: false },
-          { key: 'cl',  idMl: 'calc-ref-cl',  idVend: 'cfg-vend-cl',  idAdmin: 'cfg-admin-cl',  lblReal: 'lbl-clp-real', lblCli: 'lbl-clp-cli', varReal: 'clp_ve', varCli: 'clp_ve_cli', out: false },
-          { key: 'ec',  idMl: 'calc-ref-ec',  idVend: 'cfg-vend-ec',  idAdmin: 'cfg-admin-ec',  lblReal: 'lbl-ecd-real', lblCli: 'lbl-ecd-cli', varReal: 'ecd_ve', varCli: 'ecd_ve_cli', out: false },
-          { key: 'mx',  idMl: 'calc-ref-mx',  idVend: 'cfg-vend-mx',  idAdmin: 'cfg-admin-mx',  lblReal: 'lbl-mxn-real', lblCli: 'lbl-mxn-cli', varReal: 'mxn_ve', varCli: 'mxn_ve_cli', out: false },
-          { key: 'pa',  idMl: 'calc-ref-pa',  idVend: 'cfg-vend-pa',  idAdmin: 'cfg-admin-pa',  lblReal: 'lbl-pan-real', lblCli: 'lbl-pan-cli', varReal: 'pan_ve', varCli: 'pan_ve_cli', out: false },
+    const codigosPaises = [
+      { key: 'usa', idMl: 'calc-ref-usa', idVend: 'cfg-vend-usa', idAdmin: 'cfg-admin-usa', lblReal: 'lbl-usa-real', lblCli: 'lbl-usa-cli', varReal: 'usd_ve', varCli: 'usd_ve_cli', out: false },
+      { key: 'br',  idMl: 'calc-ref-br',  idVend: 'cfg-vend-br',  idAdmin: 'cfg-admin-br',  lblReal: 'lbl-brl-real', lblCli: 'lbl-brl-cli', varReal: 'brl_ve', varCli: 'brl_ve_cli', out: false },
+      { key: 'do',  idMl: 'calc-ref-do',  idVend: 'cfg-vend-do',  idAdmin: 'cfg-admin-do',  lblReal: 'lbl-do-real',  lblCli: 'lbl-do-cli',  varReal: 'do_ve',  varCli: 'do_ve_cli',  out: false },
+      { key: 'co',  idMl: 'calc-ref-co',  idVend: 'cfg-vend-co',  idAdmin: 'cfg-admin-co',  lblReal: 'lbl-co-real',  lblCli: 'lbl-co-cli',  varReal: 'co_ve',  varCli: 'co_ve_cli',  out: false },
+      { key: 'pe',  idMl: 'calc-ref-pe',  idVend: 'cfg-vend-pe',  idAdmin: 'cfg-admin-pe',  lblReal: 'lbl-pen-real', lblCli: 'lbl-pen-cli', varReal: 'pen_ve', varCli: 'pen_ve_cli', out: false },
+      { key: 'cl',  idMl: 'calc-ref-cl',  idVend: 'cfg-vend-cl',  idAdmin: 'cfg-admin-cl',  lblReal: 'lbl-clp-real', lblCli: 'lbl-clp-cli', varReal: 'clp_ve', varCli: 'clp_ve_cli', out: false },
+      { key: 'ec',  idMl: 'calc-ref-ec',  idVend: 'cfg-vend-ec',  idAdmin: 'cfg-admin-ec',  lblReal: 'lbl-ecd-real', lblCli: 'lbl-ecd-cli', varReal: 'ecd_ve', varCli: 'ecd_ve_cli', out: false },
+      { key: 'mx',  idMl: 'calc-ref-mx',  idVend: 'cfg-vend-mx',  idAdmin: 'cfg-admin-mx',  lblReal: 'lbl-mxn-real', lblCli: 'lbl-mxn-cli', varReal: 'mxn_ve', varCli: 'mxn_ve_cli', out: false },
+      { key: 'pa',  idMl: 'calc-ref-pa',  idVend: 'cfg-vend-pa',  idAdmin: 'cfg-admin-pa',  lblReal: 'lbl-pan-real', lblCli: 'lbl-pan-cli', varReal: 'pan_ve', varCli: 'pan_ve_cli', out: false },
 
-          { key: 'out_usa', idMl: 'calc-out-usa', idVend: 'cfg-vend-out-usa', idAdmin: 'cfg-admin-out-usa', lblReal: 'lbl-ve-usd-real', lblCli: 'lbl-ve-usd-cli', varReal: 've_usd', varCli: 've_usd_cli', out: true },
-          { key: 'out_br',  idMl: 'calc-out-br',  idVend: 'cfg-vend-out-br',  idAdmin: 'cfg-admin-out-br',  lblReal: 'lbl-ve-brl-real', lblCli: 'lbl-ve-brl-cli', varReal: 've_brl', varCli: 've_brl_cli', out: true },
-          { key: 'out_do',  idMl: 'calc-out-do',  idVend: 'cfg-vend-out-do',  idAdmin: 'cfg-admin-out-do',  lblReal: 'lbl-ve-dop-real', lblCli: 'lbl-ve-dop-cli', varReal: 've_dop', varCli: 've_dop_cli', out: true },
-          { key: 'out_co',  idMl: 'calc-out-co',  idVend: 'cfg-vend-out-co',  idAdmin: 'cfg-admin-out-co',  lblReal: 'lbl-ve-cop-real', lblCli: 'lbl-ve-cop-cli', varReal: 've_cop', varCli: 've_cop_cli', out: true },
-          { key: 'out_pe',  idMl: 'calc-out-pe',  idVend: 'cfg-vend-out-pe',  idAdmin: 'cfg-admin-out-pe',  lblReal: 'lbl-ve-pen-real', lblCli: 'lbl-ve-pen-cli', varReal: 've_pen', varCli: 've_pen_cli', out: true },
-          { key: 'out_cl',  idMl: 'calc-out-cl',  idVend: 'cfg-vend-out-cl',  idAdmin: 'cfg-admin-out-cl',  lblReal: 'lbl-ve-clp-real', lblCli: 'lbl-ve-clp-cli', varReal: 've_clp', varCli: 've_clp_cli', out: true },
-          { key: 'out_ec',  idMl: 'calc-out-ec',  idVend: 'cfg-vend-out-ec',  idAdmin: 'cfg-admin-out-ec',  lblReal: 'lbl-ve-ecd-real', lblCli: 'lbl-ve-ecd-cli', varReal: 've_ecd', varCli: 've_ecd_cli', out: true },
-          { key: 'out_mx',  idMl: 'calc-out-mx',  idVend: 'cfg-vend-out-mx',  idAdmin: 'cfg-admin-out-mx',  lblReal: 'lbl-ve-mxn-real', lblCli: 'lbl-ve-mxn-cli', varReal: 've_mxn', varCli: 've_mxn_cli', out: true },
-          { key: 'out_pa',  idMl: 'calc-out-pa',  idVend: 'cfg-vend-out-pa',  idAdmin: 'cfg-admin-out-pa',  lblReal: 'lbl-ve-pan-real', lblCli: 'lbl-ve-pan-cli', varReal: 've_pan', varCli: 've_pan_cli', out: true }
-        ];
+      { key: 'out_usa', idMl: 'calc-out-usa', idVend: 'cfg-vend-out-usa', idAdmin: 'cfg-admin-out-usa', lblReal: 'lbl-ve-usd-real', lblCli: 'lbl-ve-usd-cli', varReal: 've_usd', varCli: 've_usd_cli', out: true },
+      { key: 'out_br',  idMl: 'calc-out-br',  idVend: 'cfg-vend-out-br',  idAdmin: 'cfg-admin-out-br',  lblReal: 'lbl-ve-brl-real', lblCli: 'lbl-ve-brl-cli', varReal: 've_brl', varCli: 've_brl_cli', out: true },
+      { key: 'out_do',  idMl: 'calc-out-do',  idVend: 'cfg-vend-out-do',  idAdmin: 'cfg-admin-out-do',  lblReal: 'lbl-ve-dop-real', lblCli: 'lbl-ve-dop-cli', varReal: 've_dop', varCli: 've_dop_cli', out: true },
+      { key: 'out_co',  idMl: 'calc-out-co',  idVend: 'cfg-vend-out-co',  idAdmin: 'cfg-admin-out-co',  lblReal: 'lbl-ve-cop-real', lblCli: 'lbl-ve-cop-cli', varReal: 've_cop', varCli: 've_cop_cli', out: true },
+      { key: 'out_pe',  idMl: 'calc-out-pe',  idVend: 'cfg-vend-out-pe',  idAdmin: 'cfg-admin-out-pe',  lblReal: 'lbl-ve-pen-real', lblCli: 'lbl-ve-pen-cli', varReal: 've_pen', varCli: 've_pen_cli', out: true },
+      { key: 'out_cl',  idMl: 'calc-out-cl',  idVend: 'cfg-vend-out-cl',  idAdmin: 'cfg-admin-out-cl',  lblReal: 'lbl-ve-clp-real', lblCli: 'lbl-ve-clp-cli', varReal: 've_clp', varCli: 've_clp_cli', out: true },
+      { key: 'out_ec',  idMl: 'calc-out-ec',  idVend: 'cfg-vend-out-ec',  idAdmin: 'cfg-admin-out-ec',  lblReal: 'lbl-ve-ecd-real', lblCli: 'lbl-ve-ecd-cli', varReal: 've_ecd', varCli: 've_ecd_cli', out: true },
+      { key: 'out_mx',  idMl: 'calc-out-mx',  idVend: 'cfg-vend-out-mx',  idAdmin: 'cfg-admin-out-mx',  lblReal: 'lbl-ve-mxn-real', lblCli: 'lbl-ve-mxn-cli', varReal: 've_mxn', varCli: 've_mxn_cli', out: true },
+      { key: 'out_pa',  idMl: 'calc-out-pa',  idVend: 'cfg-vend-out-pa',  idAdmin: 'cfg-admin-out-pa',  lblReal: 'lbl-ve-pan-real', lblCli: 'lbl-ve-pan-cli', varReal: 've_pan', varCli: 've_pan_cli', out: true }
+    ];
 
-        codigosPaises.forEach(item => {
-          const ml = parseFloat(document.getElementById(item.idMl)?.value) || 1.0;
-          const vend = parseFloat(document.getElementById(item.idVend)?.value) || 0.0;
-          const admin = parseFloat(document.getElementById(item.idAdmin)?.value) || 0.0;
+    codigosPaises.forEach(item => {
+      const ml = parseFloat(document.getElementById(item.idMl)?.value) || 1.0;
+      const vend = parseFloat(document.getElementById(item.idVend)?.value) || 0.0;
+      const admin = parseFloat(document.getElementById(item.idAdmin)?.value) || 0.0;
 
-          variablesGlobales.pais_config[item.key] = { ml: ml, vend: vend, admin: admin };
+      variablesGlobales.pais_config[item.key] = { ml: ml, vend: vend, admin: admin };
 
-          const tasaReal = refUsdt / ml;
-          let factor = 1.0;
+      const tasaReal = refUsdt / ml;
+      let factor = 1.0;
 
-          if (item.out) {
-            factor = (100 + admin + vend) / 100;
-          } else {
-            factor = (100 - admin - vend) / 100;
-          }
+      if (item.out) {
+        factor = (100 + admin + vend) / 100;
+      } else {
+        factor = (100 - admin - vend) / 100;
+      }
 
-          const tasaCli = tasaReal * factor;
+      const tasaCli = tasaReal * factor;
 
-          variablesGlobales[item.varReal] = tasaReal;
-          variablesGlobales[item.varCli] = tasaCli;
+      variablesGlobales[item.varReal] = tasaReal;
+      variablesGlobales[item.varCli] = tasaCli;
 
-          if (document.getElementById(item.lblReal)) {
-            document.getElementById(item.lblReal).value = "Real: " + tasaReal.toFixed(4) + (item.out ? "" : " Bs.");
-          }
-          if (document.getElementById(item.lblCli)) {
-            document.getElementById(item.lblCli).value = "Cliente: " + tasaCli.toFixed(4) + (item.out ? "" : " Bs.");
+      if (document.getElementById(item.lblReal)) {
+        document.getElementById(item.lblReal).value = "Real: " + tasaReal.toFixed(2) + (item.out ? "" : " Bs.");
+      }
+      if (document.getElementById(item.lblCli)) {
+        document.getElementById(item.lblCli).value = "Cliente: " + tasaCli.toFixed(2) + (item.out ? "" : " Bs.");
+      }
+    });
+
+    if(document.getElementById('dash-usdt-static')) {
+        document.getElementById('dash-usdt-static').innerText = "Bs. " + variablesGlobales.usdt_ves.toFixed(2);
           }
         });
 
