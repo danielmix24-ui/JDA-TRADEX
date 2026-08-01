@@ -234,28 +234,88 @@
 
     <main class="main">
       
-      <div class="page active" id="page-dashboard">
+      <!-- ==================== PÁGINA DE REMESAS Y CALCULADORA JDA TRADEX ==================== -->
+      <div class="page" id="page-remesas">
         <div class="page-header">
           <div>
-            <h2>Dashboard Operativo</h2>
-            <p>Métricas · <span id="today-date"></span></p>
-          </div>
-          <div style="display:flex; gap:8px;">
-            <button id="btn-ver-ganancia-vendedor" class="btn btn-purple" style="display:none;" onclick="openModal('modal-ganancia-vendedor')">👁️ Ver Ganancias Vendedor</button>
-            <button id="btn-ver-ganancia-admin" class="btn btn-teal" style="display:none;" onclick="openModal('modal-ganancia-admin')">👁️ Ver Ganancias Administrador</button>
+            <h2>💸 Libro de Remesas</h2>
+            <p>Calculadora activa y registro unificado de operaciones</p>
           </div>
         </div>
-        <div class="stats-grid">
-          <div class="stat-card" style="border-top:3px solid var(--gold);"><div class="si">📅</div><div class="sv" id="dash-hoy-val">0</div><div class="sl">Órdenes Activas</div></div>
-          <div class="stat-card" style="border-top:3px solid var(--success);"><div class="si">📊</div><div class="sv" id="dash-mes-val">0</div><div class="sl">Órdenes Completadas</div></div>
-          <div class="stat-card" style="border-top:3px solid var(--blue);"><div class="si">🪙</div><div class="sv" id="dash-usdt-static">Bs. --</div><div class="sl">USDT Oficial</div></div>
-          <div class="stat-card" style="border-top:3px solid var(--purple);"><div class="si">📈</div><div class="sv" id="dash-ganancias-hoy">0.00 USDT</div><div class="sl">Monto de Remesas del Día (USDT Bruto)</div></div>
-        </div>
-      </div>
 
-      <div class="page" id="page-remesas">
-        <div class="page-header"><h2>💸 Libro de Remesas</h2><p>Historial unificado de operaciones</p></div>
-        
+        <!-- CALCULADORA SUPERIOR DE REMESAS JDA TRADEX -->
+        <div class="card" style="border-top:3px solid var(--gold); background: var(--surface2); padding: 20px; margin-bottom: 20px;">
+          <h3 style="font-family:'Syne', sans-serif; font-size:16px; margin-bottom:14px; color:var(--gold); display:flex; align-items:center; gap:8px;">
+            🧮 Calculadora de Envíos y Tasas — JDA TRADEX
+          </h3>
+          
+          <div class="fg3" style="gap:12px; margin-bottom:12px;">
+            <div class="field">
+              <label>🌐 País de Origen (Envía)</label>
+              <select id="calc-pais-origen" onchange="window.actualizarCalculadoraRemesas()">
+                <option value="USA">🇺🇸 USA (USD)</option>
+                <option value="BRL">🇧🇷 Brasil (BRL)</option>
+                <option value="DOP">🇩🇴 Dominicana (DOP)</option>
+                <option value="COP">🇨🇴 Colombia (COP)</option>
+                <option value="PEN">🇵🇪 Perú (PEN)</option>
+                <option value="CLP">🇨🇱 Chile (CLP)</option>
+                <option value="ECD">🇪🇨 Ecuador (USD)</option>
+                <option value="MXN">🇲🇽 México (MXN)</option>
+                <option value="PAN">🇵🇦 Panamá (USD)</option>
+                <option value="VE">🇻🇪 Venezuela (VES)</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>🎯 País de Destino (Recibe)</label>
+              <select id="calc-pais-destino" onchange="window.actualizarCalculadoraRemesas()">
+                <option value="VE">🇻🇪 Venezuela (VES)</option>
+                <option value="USA">🇺🇸 USA (USD)</option>
+                <option value="BRL">🇧🇷 Brasil (BRL)</option>
+                <option value="DOP">🇩🇴 Dominicana (DOP)</option>
+                <option value="COP">🇨🇴 Colombia (COP)</option>
+                <option value="PEN">🇵🇪 Perú (PEN)</option>
+                <option value="CLP">🇨🇱 Chile (CLP)</option>
+                <option value="ECD">🇪🇨 Ecuador (USD)</option>
+                <option value="MXN">🇲🇽 México (MXN)</option>
+                <option value="PAN">🇵🇦 Panamá (USD)</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>💵 Monto a Enviar por Cliente</label>
+              <input type="number" id="calc-monto-cliente" placeholder="Ej: 500" value="500" oninput="window.actualizarCalculadoraRemesas()">
+            </div>
+          </div>
+
+          <div class="fg2" style="gap:12px; margin-bottom:16px;">
+            <div class="field">
+              <label>📈 Tasa Aplicada al Cliente</label>
+              <input type="number" id="calc-tasa-cliente" step="0.00001" placeholder="Ej: 155.83" oninput="window.actualizarCalculadoraRemesas(true)">
+            </div>
+            <div class="field">
+              <label>💰 Monto Resultante que Recibe</label>
+              <input type="text" id="calc-monto-recibe" class="tasa-calculada-sub" readonly style="font-size:16px; font-weight:bold; text-align:center;">
+            </div>
+          </div>
+
+          <!-- DETALLE Y ACCIONES DE COMPARTIR -->
+          <div style="background: var(--surface); padding: 15px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 15px;">
+            <div style="font-family:'Syne', sans-serif; font-weight:800; color:var(--gold); font-size:15px; text-align:center; border-bottom:1px dashed var(--border); padding-bottom:6px; margin-bottom:10px;">
+              🛡️ JDA TRADEX — COTIZACIÓN DE ENVÍO
+            </div>
+            <div id="calc-preview-cotizacion" style="font-size:13.5px; line-height:1.6; color:var(--text);">
+              <!-- Renderizado dinámico vía JavaScript -->
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-success" style="flex:1;" onclick="window.compartirCotizacionWhatsApp()">💬 Compartir Vía WhatsApp</button>
+            <button class="btn btn-purple" style="flex:1;" onclick="window.compartirCotizacionExterna()">📤 Compartir Vía Externa</button>
+          </div>
+        </div>
+
+        <!-- LIQUIDACIÓN DE RED -->
         <div class="card" style="border-top:3px solid var(--gold); background: var(--surface2); padding: 15px; margin-bottom: 20px;">
           <h3 style="font-family:'Syne'; font-size:14px; margin-bottom:6px; color:var(--gold);">💰 Liquidación de Red (Corte Diario)</h3>
           <p style="font-size:12px; color:var(--muted); margin-bottom:8px;">Monto total acumulado que el vendedor debe transferir al administrador (restando únicamente la ganancia del vendedor).</p>
@@ -272,6 +332,7 @@
           </div>
           <button class="btn btn-p" onclick="abrirModalRemesa()">+ Nueva Remesa</button>
         </div>
+        
         <div class="card" style="padding:0;">
           <div class="table-responsive">
             <table>
@@ -281,39 +342,7 @@
           </div>
         </div>
       </div>
-
-      <div class="page" id="page-recargas">
-        <div class="page-header"><h2>📱 Control de Recargas Telefónicas</h2><p>Gestión y registro de saldos de telefonía</p></div>
-        <div class="topbar">
-          <div class="search-box"><input placeholder="Buscar recarga..." id="buscar-recarga-input" oninput="window.filtrarRecargasPorTexto()"></div>
-          <button class="btn btn-p" onclick="abrirModalRecarga()">+ Realizar Recarga</button>
-        </div>
-        <div class="card" style="padding:0;">
-          <div class="table-responsive">
-            <table>
-              <thead><tr><th>Fecha / Hora</th><th>Cliente</th><th>Operadora</th><th>Número</th><th>Monto</th><th>Estado</th><th>Acciones</th></tr></thead>
-              <tbody id="recargas-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <div class="page" id="page-clientes">
-        <div class="page-header"><h2>👥 Base de Clientes</h2><p>Registro único de remitentes</p></div>
-        <div class="topbar">
-          <div class="search-box"><input placeholder="Filtrar por nombre..." id="buscar-cliente-input" oninput="window.filtrarClientesPorTexto()"></div>
-          <button class="btn btn-p" onclick="openModal('modal-cliente')">+ Nuevo Cliente</button>
-        </div>
-        <div class="card" style="padding:0;">
-          <div class="table-responsive">
-            <table>
-              <thead><tr><th>Nombre Completo</th><th>Cédula / ID</th><th>Teléfono</th><th>País</th><th>Banco Frecuente</th><th>Nro Cuenta</th><th class="th-acciones-cliente-admin">Acciones</th></tr></thead>
-              <tbody id="clientes-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
+      
       <div class="page" id="page-caja">
         <div class="page-header"><h2>🗄️ Arqueo de Caja y Flujo de Efectivo</h2><p>Control financiero en tiempo real</p></div>
         <div class="stats-grid" style="margin-bottom: 20px;">
