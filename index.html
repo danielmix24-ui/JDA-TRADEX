@@ -2086,5 +2086,155 @@
         if(elEnt) elEnt.innerText = totalEntregado.toFixed(2) + " USD";
     }
   </script>
+  // ==========================================
+// 1. VER Y COMPARTIR TRANSACCIÓN (REMESAS)
+// ==========================================
+window.verDetalleTransaccion = function(id) {
+  const rem = DB.remesas.find(r => r.id === id || r.id === String(id));
+  if (!rem) return;
+
+  const cli = DB.clientes.find(c => c.nombre === rem.cliente || c.id === rem.clienteId) || {};
+  const vendedorNombre = rem.vendedor || "Daniel (Admin)";
+  const fechaHora = rem.fechaHora || rem.fecha || new Date().toLocaleString();
+
+  // Plantilla para la vista en pantalla (HTML)
+  const htmlContenido = `
+    <div style="font-family: monospace; font-size: 13px; line-height: 1.6;">
+      <strong>ID Transacción:</strong> ${rem.id}<br>
+      <strong>Fecha/Hora:</strong> ${fechaHora}<br>
+      <strong>Vendedor / Operador:</strong> ${vendedorNombre}<br><br>
+      
+      <strong>👤 INFORMACIÓN DEL CLIENTE QUE RECIBE</strong><br>
+      <strong>Nombre Cliente:</strong> ${rem.cliente || cli.nombre || 'N/A'}<br>
+      <strong>Cédula / ID:</strong> ${cli.cedula || 'N/A'}<br>
+      <strong>Teléfono:</strong> ${cli.telefono || 'N/A'}<br>
+      <strong>País:</strong> ${cli.pais || 'N/A'}<br>
+      <strong>Banco Frecuente:</strong> ${cli.banco || 'N/A'}<br>
+      <strong>Nro. Cuenta Cliente:</strong> ${cli.cuenta || rem.datosDestinatario || 'N/A'}<br><br>
+      
+      <strong>💸 DETALLES DE LA OPERACIÓN</strong><br>
+      <strong>Trayecto:</strong> ${rem.trayecto || 'N/A'}<br>
+      <strong>Monto Base Enviado:</strong> ${rem.montoBase || rem.monto} ${rem.monedaBase || ''}<br>
+      <strong>Tasa Aplicada al Cliente:</strong> ${rem.tasaCliente || rem.tasa}<br>
+      <strong>Monto Neto Líquido:</strong> ${rem.neto || rem.montoNeto}<br>
+      <strong>Método de pago:</strong> ${rem.metodoPago || 'Transferencia'}<br>
+      <strong>Estado:</strong> ${rem.estado || 'Procesada'}
+    </div>
+  `;
+
+  // Texto plano limpio para WhatsApp y Compartición Externa
+  const textoCompartir = 
+`ID Transacción: ${rem.id}
+Fecha/Hora: ${fechaHora}
+Vendedor / Operador: ${vendedorNombre}
+
+👤 INFORMACIÓN DEL CLIENTE QUE RECIBE
+Nombre Cliente: ${rem.cliente || cli.nombre || 'N/A'}
+Cédula / ID: ${cli.cedula || 'N/A'}
+Teléfono: ${cli.telefono || 'N/A'}
+País: ${cli.pais || 'N/A'}
+Banco Frecuente: ${cli.banco || 'N/A'}
+Nro. Cuenta Cliente: ${cli.cuenta || rem.datosDestinatario || 'N/A'}
+
+💸 DETALLES DE LA OPERACIÓN
+Trayecto: ${rem.trayecto || 'N/A'}
+Monto Base Enviado: ${rem.montoBase || rem.monto} ${rem.monedaBase || ''}
+Tasa Aplicada al Cliente: ${rem.tasaCliente || rem.tasa}
+Monto Neto Líquido: ${rem.neto || rem.montoNeto}
+Método de pago: ${rem.metodoPago || 'Transferencia'}
+Estado: ${rem.estado || 'Procesada'}`;
+
+  // Inyectar en el modal
+  const cont = document.getElementById('detalle-orden-contenido') || document.getElementById('detalle-especifico-contenido');
+  if (cont) cont.innerHTML = htmlContenido;
+
+  // Configurar botones de compartir
+  const btnWsp = document.getElementById('btn-compartir-whatsapp') || document.getElementById('btn-compartir-detalle-whatsapp');
+  if (btnWsp) {
+    btnWsp.onclick = function() {
+      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(textoCompartir)}`;
+      window.open(url, '_blank');
+    };
+  }
+
+  const btnExt = document.getElementById('btn-compartir-externo') || document.getElementById('btn-compartir-detalle-externo');
+  if (btnExt) {
+    btnExt.onclick = function() {
+      if (navigator.share) {
+        navigator.share({
+          title: `Transacción ${rem.id}`,
+          text: textoCompartir
+        }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(textoCompartir);
+        alert("📋 Resumen copiado al portapapeles.");
+      }
+    };
+  }
+
+  openModal('modal-ver-orden');
+};
+
+// ==========================================
+// 2. VER Y COMPARTIR DESGLOSE DE GANANCIAS
+// ==========================================
+window.verDetalleGananciaRemesa = function(id) {
+  const rem = DB.remesas.find(r => r.id === id || r.id === String(id));
+  if (!rem) return;
+
+  const htmlGanancia = `
+    <div style="font-family: monospace; font-size: 13.5px; line-height: 1.6;">
+      <strong>📊 Desglose de Ganancias - Remesa</strong><br><br>
+      <strong>ID Orden:</strong> ${rem.id}<br>
+      <strong>Cliente:</strong> ${rem.cliente || 'N/A'}<br>
+      <strong>Monto Base:</strong> ${rem.montoBase || rem.monto} ${rem.monedaBase || ''}<br>
+      <strong>Monto USDT Ref:</strong> ${rem.montoUsdtRef || rem.usdtRef || '0.00'} USDT<br>
+      <strong>Comisión Vendedor (%):</strong> ${rem.comisionVendedorPorcentaje || rem.porcentajeVendedor || '0'}%<br>
+      <strong>Ganancia Administrador (Casa):</strong> ${rem.gananciaAdmin || rem.usdtAdmin || '1.56'} USDT
+    </div>
+  `;
+
+  const textoGanancia = 
+`📊 Desglose de Ganancias - Remesa
+
+ID Orden: ${rem.id}
+Cliente: ${rem.cliente || 'N/A'}
+Monto Base: ${rem.montoBase || rem.monto} ${rem.monedaBase || ''}
+Monto USDT Ref: ${rem.montoUsdtRef || rem.usdtRef || '0.00'} USDT
+Comisión Vendedor (%): ${rem.comisionVendedorPorcentaje || rem.porcentajeVendedor || '0'}%
+Ganancia Administrador (Casa): ${rem.gananciaAdmin || rem.usdtAdmin || '1.56'} USDT`;
+
+  const modalBody = document.getElementById('modal-ganancia-admin') || document.getElementById('modal-detalle-especifico');
+  
+  // Si usas el modal de detalle o uno exclusivo de ganancias:
+  const cont = document.getElementById('detalle-especifico-contenido') || document.getElementById('total-admin-modal-val');
+  if (cont) cont.innerHTML = htmlGanancia;
+
+  // Botones de compartir para ganancias
+  const btnWsp = document.getElementById('btn-compartir-ganancia-whatsapp') || document.getElementById('btn-compartir-detalle-whatsapp');
+  if (btnWsp) {
+    btnWsp.onclick = function() {
+      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(textoGanancia)}`;
+      window.open(url, '_blank');
+    };
+  }
+
+  const btnExt = document.getElementById('btn-compartir-ganancia-externo') || document.getElementById('btn-compartir-detalle-externo');
+  if (btnExt) {
+    btnExt.onclick = function() {
+      if (navigator.share) {
+        navigator.share({
+          title: `Ganancias Orden ${rem.id}`,
+          text: textoGanancia
+        }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(textoGanancia);
+        alert("📋 Desglose de ganancia copiado al portapapeles.");
+      }
+    };
+  }
+
+  openModal('modal-detalle-especifico');
+};
 </body>
 </html>
