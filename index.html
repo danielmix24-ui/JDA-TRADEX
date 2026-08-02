@@ -197,6 +197,7 @@
         <div class="nav-section">
           <div class="nav-label">Principal</div>
           <div class="nav-item active" onclick="goto('dashboard', this)"><span class="icon">📊</span><span>Dashboard</span></div>
+          <div class="nav-item" onclick="goto('calculadora', this)"><span class="icon">🧮</span><span>Calculadora</span></div>
           <div class="nav-item" onclick="goto('remesas', this)"><span class="icon">💸</span><span>Remesas</span></div>
           <div class="nav-item" onclick="goto('recargas', this)"><span class="icon">📱</span><span>Recargas</span></div>
           <div class="nav-item" onclick="goto('clientes', this)"><span class="icon">👥</span><span>Clientes</span></div>
@@ -218,6 +219,7 @@
 
     <div class="mobile-nav">
       <div class="mobile-nav-item active" id="m-nav-dashboard" onclick="gotoMobile('dashboard')"><span class="m-icon">📊</span><span>Inicio</span></div>
+      <div class="mobile-nav-item" id="m-nav-calculadora" onclick="gotoMobile('calculadora')"><span class="m-icon">🧮</span><span>Calculadora</span></div>
       <div class="mobile-nav-item" id="m-nav-remesas" onclick="gotoMobile('remesas')"><span class="m-icon">💸</span><span>Remesas</span></div>
       <div class="mobile-nav-item" id="m-nav-recargas" onclick="gotoMobile('recargas')"><span class="m-icon">📱</span><span>Recargas</span></div>
       <div class="mobile-nav-item" id="m-nav-clientes" onclick="gotoMobile('clientes')"><span class="m-icon">👥</span><span>Clientes</span></div>
@@ -679,7 +681,67 @@
           </div>
         </div>
       </div>
+<!-- PÁGINA CALCULADORA -->
+      <div class="page" id="page-calculadora">
+        <div class="page-header">
+          <div>
+            <h2>🧮 Calculadora de Envíos</h2>
+            <p>Cotizador rápido de remesas en tiempo real</p>
+          </div>
+        </div>
 
+        <div class="card" style="max-width: 600px; margin: 0 auto; border-top: 3px solid var(--gold);">
+          <div class="form-stack">
+            <div class="field">
+              <label>Trayecto de Envío</label>
+              <select id="calc-trayecto" onchange="window.ejecutarCalculoCotizacion()">
+                <option value="USA_VE">🇺🇸 ➔ 🇻🇪 USA a Venezuela (USD)</option>
+                <option value="BRL_VE">🇧🇷 ➔ 🇻🇪 Brasil a Venezuela (BRL)</option>
+                <option value="DOP_VE">🇩🇴 ➔ 🇻🇪 Dominicana a Venezuela (DOP)</option>
+                <option value="COP_VE">🇨🇴 ➔ 🇻🇪 Colombia a Venezuela (COP)</option>
+                <option value="PEN_VE">🇵🇪 ➔ 🇻🇪 Perú a Venezuela (PEN)</option>
+                <option value="CLP_VE">🇨🇱 ➔ 🇻🇪 Chile a Venezuela (CLP)</option>
+                <option value="ECD_VE">🇪🇨 ➔ 🇻🇪 Ecuador a Venezuela (USD)</option>
+                <option value="MXN_VE">🇲🇽 ➔ 🇻🇪 México a Venezuela (MXN)</option>
+                <option value="PAN_VE">🇵🇦 ➔ 🇻🇪 Panamá a Venezuela (USD)</option>
+                <option value="VE_USA">🇻🇪 ➔ 🇺🇸 Venezuela a USA (USD)</option>
+                <option value="VE_BRL">🇻🇪 ➔ 🇧🇷 Venezuela a Brasil (BRL)</option>
+                <option value="VE_DOP">🇻🇪 ➔ 🇩🇴 Venezuela a Dominicana (DOP)</option>
+                <option value="VE_COP">🇻🇪 ➔ 🇨🇴 Venezuela a Colombia (COP)</option>
+                <option value="VE_PEN">🇻🇪 ➔ 🇵🇪 Venezuela a Perú (PEN)</option>
+                <option value="VE_CLP">🇻🇪 ➔ 🇨🇱 Venezuela a Chile (CLP)</option>
+                <option value="VE_ECD">🇻🇪 ➔ 🇪🇨 Venezuela a Ecuador (USD)</option>
+                <option value="VE_MXN">🇻🇪 ➔ 🇲🇽 Venezuela a México (MXN)</option>
+                <option value="VE_PAN">🇻🇪 ➔ 🇵🇦 Venezuela a Panamá (USD)</option>
+              </select>
+            </div>
+
+            <div class="fg2">
+              <div class="field">
+                <label>Monto a Enviar</label>
+                <div class="monto-wrap">
+                  <span class="monto-prefix" id="calc-moneda-sym">R$</span>
+                  <input type="number" id="calc-monto-input" placeholder="Ej. 500" value="500" oninput="window.ejecutarCalculoCotizacion()">
+                </div>
+              </div>
+              <div class="field">
+                <label>Tasa del Sistema</label>
+                <input type="number" id="calc-tasa-input" readonly style="color:var(--gold); font-weight:bold;">
+              </div>
+            </div>
+
+            <div class="field" style="background: var(--surface2); padding: 15px; border-radius: 10px; border: 1px solid var(--border); text-align: center;">
+              <label style="font-size: 11px; text-transform: uppercase; color: var(--muted);">Monto Resultante a Recibir</label>
+              <div id="calc-resultado-monto" style="font-size: 26px; font-weight: 800; color: var(--success); font-family: 'Syne'; margin-top: 4px;">0.00 VES</div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+              <button class="btn btn-success" style="flex: 1;" onclick="window.compartirCotizacionWhatsApp()">💬 Compartir WhatsApp</button>
+              <button class="btn btn-purple" style="flex: 1;" onclick="window.compartirCotizacionExterna()">📤 Compartir Externo</button>
+            </div>
+          </div>
+        </div>
+                  </div>
     </main>
   </div>
 
