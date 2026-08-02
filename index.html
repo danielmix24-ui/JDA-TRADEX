@@ -2147,6 +2147,82 @@
         if(elInt) elInt.innerText = totalIntereses.toFixed(2) + " USD";
         if(elEnt) elEnt.innerText = totalEntregado.toFixed(2) + " USD";
     }
+    // DICCIONARIO DE ETIQUETAS Y MONEDAS PARA CALCULADORA
+    const calcMonedasMap = {
+      "USA_VE": { sym: "$", res: "VES", name: "USA ➔ Venezuela" },
+      "BRL_VE": { sym: "R$", res: "VES", name: "Brasil ➔ Venezuela" },
+      "DOP_VE": { sym: "RD$", res: "VES", name: "Dominicana ➔ Venezuela" },
+      "COP_VE": { sym: "COP$", res: "VES", name: "Colombia ➔ Venezuela" },
+      "PEN_VE": { sym: "S/", res: "VES", name: "Perú ➔ Venezuela" },
+      "CLP_VE": { sym: "CLP$", res: "VES", name: "Chile ➔ Venezuela" },
+      "ECD_VE": { sym: "$", res: "VES", name: "Ecuador ➔ Venezuela" },
+      "MXN_VE": { sym: "MEX$", res: "VES", name: "México ➔ Venezuela" },
+      "PAN_VE": { sym: "$", res: "VES", name: "Panamá ➔ Venezuela" },
+      "VE_USA": { sym: "VES", res: "USD", name: "Venezuela ➔ USA" },
+      "VE_BRL": { sym: "VES", res: "BRL", name: "Venezuela ➔ Brasil" },
+      "VE_DOP": { sym: "VES", res: "DOP", name: "Venezuela ➔ Dominicana" },
+      "VE_COP": { sym: "VES", res: "COP", name: "Venezuela ➔ Colombia" },
+      "VE_PEN": { sym: "VES", res: "PEN", name: "Venezuela ➔ Perú" },
+      "VE_CLP": { sym: "VES", res: "CLP", name: "Venezuela ➔ Chile" },
+      "VE_ECD": { sym: "VES", res: "USD", name: "Venezuela ➔ Ecuador" },
+      "VE_MXN": { sym: "VES", res: "MXN", name: "Venezuela ➔ México" },
+      "VE_PAN": { sym: "VES", res: "USD", name: "Venezuela ➔ Panamá" }
+    };
+
+    window.ejecutarCalculoCotizacion = function() {
+      const trayecto = document.getElementById('calc-trayecto').value;
+      const monto = parseFloat(document.getElementById('calc-monto-input').value) || 0;
+      const key = routeKeyMap[trayecto];
+      
+      // Obtener tasa asignada al cliente
+      let tasa = variablesGlobales[key + "_ve_cli"] || variablesGlobales["ve_" + key + "_cli"] || 1;
+      if (trayecto === "USA_VE") tasa = variablesGlobales.usd_ve_cli;
+      if (trayecto === "ECD_VE") tasa = variablesGlobales.ecd_ve_cli;
+      if (trayecto === "PAN_VE") tasa = variablesGlobales.pan_ve_cli;
+
+      const configMoneda = calcMonedasMap[trayecto];
+      document.getElementById('calc-moneda-sym').innerText = configMoneda.sym;
+      document.getElementById('calc-tasa-input').value = tasa;
+
+      let resultado = 0;
+      if (trayecto.startsWith("VE_")) {
+        resultado = monto / tasa;
+      } else {
+        resultado = monto * tasa;
+      }
+
+      document.getElementById('calc-resultado-monto').innerText = resultado.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " " + configMoneda.res;
+    };
+
+    window.generarTextoCotizacion = function() {
+      const trayecto = document.getElementById('calc-trayecto').value;
+      const monto = parseFloat(document.getElementById('calc-monto-input').value) || 0;
+      const tasa = document.getElementById('calc-tasa-input').value;
+      const resultado = document.getElementById('calc-resultado-monto').innerText;
+      const configMoneda = calcMonedasMap[trayecto];
+
+      return `*🛡️ JDA TRADEX — COTIZACIÓN DE ENVÍO*\n\n` +
+             `🌐 *Ruta:* ${configMoneda.name}\n` +
+             `💵 *Monto a enviar:* ${monto} ${configMoneda.sym}\n` +
+             `📈 *Tasa aplicada:* ${tasa}\n` +
+             `💰 *Total a recibir:* ${resultado}\n\n` +
+             `_¡Gracias por preferir a JDA TRADEX!_ ⚡`;
+    };
+
+    window.compartirCotizacionWhatsApp = function() {
+      const texto = encodeURIComponent(window.generarTextoCotizacion());
+      window.open(`https://api.whatsapp.com/send?text=${texto}`, '_blank');
+    };
+
+    window.compartirCotizacionExterna = function() {
+      const texto = window.generarTextoCotizacion();
+      if (navigator.share) {
+        navigator.share({ title: 'Cotización JDA TRADEX', text: texto });
+      } else {
+        navigator.clipboard.writeText(texto);
+        window.pushNotification("✅ Cotización copiada al portapapeles.");
+      }
+    };
   </script>
 </body>
 </html>
