@@ -1257,7 +1257,8 @@
 
       variablesGlobales[item.varReal] = tasaReal;
       variablesGlobales[item.varCli] = tasaCli;
-
+      
+      //  APLICACION DE 2 DECIMALES
       if (document.getElementById(item.lblReal)) {
         document.getElementById(item.lblReal).value = "Real: " + tasaReal.toFixed(2) + (item.out ? "" : " Bs.");
       }
@@ -1265,7 +1266,15 @@
         document.getElementById(item.lblCli).value = "Cliente: " + tasaCli.toFixed(2) + (item.out ? "" : " Bs.");
       }
     });
+      
+// Ajuste en el input directo de la Calculadora de Envíosconst inputCalcTasa = document.getElementById('calc-tasa-input');
+  if (inputCalcTasa && inputCalcTasa.value) {
+    inputCalcTasa.value = parseFloat(inputCalcTasa.value).toFixed(2);
+  }
 
+  if(document.getElementById('dash-usdt-static')) {
+      document.getElementById('dash-usdt-static').innerText = "Bs. " + variablesGlobales.usdt_ves.toFixed(2);
+  }   
     if(document.getElementById('dash-usdt-static')) {
         document.getElementById('dash-usdt-static').innerText = "Bs. " + variablesGlobales.usdt_ves.toFixed(2);
     }
