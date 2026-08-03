@@ -726,7 +726,7 @@
               </div>
               <div class="field">
                 <label>Tasa del Sistema</label>
-                <input type="text" id="calc-tasa-input" readonly step="0,01" style="color:var(--gold); font-weight:bold;">
+                <input type="number" id="calc-tasa-input" readonly step="0.01" style="color:var(--gold); font-weight:bold;">
               </div>
             </div>
 
@@ -2184,7 +2184,7 @@
       
       const configMoneda = calcMonedasMap[trayecto];
       document.getElementById('calc-moneda-sym').innerText = configMoneda.sym;
-      document.getElementById('calc-tasa-input').value = tasa;
+      document.getElementById("calc-tasa").value = Number(tasa).toFixed(2);
 
       let resultado = 0;
       if (trayecto.startsWith("VE_")) {
