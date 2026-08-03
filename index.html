@@ -2184,7 +2184,8 @@
       
       const configMoneda = calcMonedasMap[trayecto];
       document.getElementById('calc-moneda-sym').innerText = configMoneda.sym;
-      document.getElementById('calc-tasa-input').value = tasa;
+      document.getElementById('calc-tasa-input').value = tasaAplicada.toFixed(2);
+                                                                              
 
       let resultado = 0;
       if (trayecto.startsWith("VE_")) {
