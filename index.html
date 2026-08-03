@@ -1259,10 +1259,10 @@
       variablesGlobales[item.varCli] = tasaCli;
 
       if (document.getElementById(item.lblReal)) {
-        document.getElementById(item.lblReal).value = "Real: " + tasaReal.toFixed(2) + (item.out ? "" : " Bs.");
+        document.getElementById(item.lblReal).value = tasaReal.toFixed(2);
       }
       if (document.getElementById(item.lblCli)) {
-        document.getElementById(item.lblCli).value = "Cliente: " + tasaCli.toFixed(2) + (item.out ? "" : " Bs.");
+        document.getElementById(item.lblCli).value = tasaCli.toFixed(2);
       }
     });
 
