@@ -2225,6 +2225,40 @@
         window.pushNotification("✅ Cotización copiada al portapapeles.");
       }
     };
+      // Obtener la tasa de la estructura global
+    const claveTasa = mapTasasCli[trayecto];
+    const tasaRaw = variablesGlobales[claveTasa] || 0;
+    
+    // 💡 Formatear la tasa a exactamente 2 decimales
+    const tasaFormateada = tasaRaw.toFixed(2);
+
+    // Actualizar símbolo de moneda en el input
+    const symEl = document.getElementById('calc-moneda-sym');
+    if(symEl) symEl.innerText = mapSimbolos[trayecto] || "$";
+
+    // Asignar la tasa formateada a 2 decimales en el campo de pantalla
+    const inputTasa = document.getElementById('calc-tasa-input');
+    if(inputTasa) inputTasa.value = tasaFormateada;
+
+    // Realizar la conversión usando la tasa de 2 decimales para consistencia
+    const tasaParaCalculo = parseFloat(tasaFormateada);
+    let resultado = 0;
+
+    if (trayecto.startsWith("VE_")) {
+        // Envíos de Salida (Venezuela al Exterior)
+        resultado = tasaParaCalculo > 0 ? (montoInput / tasaParaCalculo) : 0;
+    } else {
+        // Envíos de Entrada (Exterior a Venezuela)
+        resultado = montoInput * tasaParaCalculo;
+    }
+
+    // Mostrar el resultado final formateado
+    const resEl = document.getElementById('calc-resultado-monto');
+    if(resEl) {
+        const monedaSalida = mapMonedaSalida[trayecto] || "";
+        resEl.innerText = ${resultado.toFixed(2)} ${monedaSalida};
+    }
+};
   </script>
 </body>
 </html>
