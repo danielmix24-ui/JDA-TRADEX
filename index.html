@@ -2276,6 +2276,83 @@
         window.pushNotification("✅ Cotización copiada al portapapeles.");
       }
     };
+    window.ejecutarCalculoCotizacion = function() {
+  const trayecto = document.getElementById('calc-trayecto').value;
+  const monto = parseFloat(document.getElementById('calc-monto-input').value) || 0;
+  
+  // Mapeo de prefijos o símbolos de moneda según el trayecto
+  const simbolos = {
+    "USA_VE": "$", "BRL_VE": "R$", "DOP_VE": "RD$", "COP_VE": "COL$",
+    "PEN_VE": "S/", "CLP_VE": "CLP$", "ECD_VE": "$", "MXN_VE": "MEX$", "PAN_VE": "$",
+    "VE_USA": "Bs.", "VE_BRL": "Bs.", "VE_DOP": "Bs.", "VE_COP": "Bs.",
+    "VE_PEN": "Bs.", "VE_CLP": "Bs.", "VE_ECD": "Bs.", "VE_MXN": "Bs.", "VE_PAN": "Bs."
+  };
+
+  const sufijosResultado = {
+    "USA_VE": "VES", "BRL_VE": "VES", "DOP_VE": "VES", "COP_VE": "VES",
+    "PEN_VE": "VES", "CLP_VE": "VES", "ECD_VE": "VES", "MXN_VE": "VES", "PAN_VE": "VES",
+    "VE_USA": "USD", "VE_BRL": "BRL", "VE_DOP": "DOP", "VE_COP": "COP",
+    "VE_PEN": "PEN", "VE_CLP": "CLP", "VE_ECD": "USD", "VE_MXN": "MXN", "VE_PAN": "USD"
+  };
+
+  // Actualizar símbolo de la moneda de origen
+  if(document.getElementById('calc-moneda-sym')) {
+    document.getElementById('calc-moneda-sym').innerText = simbolos[trayecto] || "$";
+  }
+
+  // Obtener la clave correspondiente en variablesGlobales
+  const key = routeKeyMap[trayecto];
+  let tasaCliente = 0;
+
+  if (key) {
+    const config = variablesGlobales.pais_config ? variablesGlobales.pais_config[key] : null;
+    const refUsdt = variablesGlobales.usdt_ves || 46.20;
+    
+    if (config) {
+      const ml = config.ml || 1.0;
+      const vend = config.vend || 0.0;
+      const admin = config.admin || 0.0;
+      const tasaReal = refUsdt / ml;
+      const esSalida = key.startsWith('out_');
+      const factor = esSalida ? ((100 + admin + vend) / 100) : ((100 - admin - vend) / 100);
+      tasaCliente = tasaReal * factor;
+    }
+  }
+
+  // Si la tasa no se calculó dinámicamente, intentar usar los valores predeterminados
+  if (!tasaCliente) {
+    const mapaVariablesDirectas = {
+      "USA_VE": "usd_ve_cli", "BRL_VE": "brl_ve_cli", "DOP_VE": "do_ve_cli", "COP_VE": "co_ve_cli",
+      "PEN_VE": "pen_ve_cli", "CLP_VE": "clp_ve_cli", "ECD_VE": "ecd_ve_cli", "MXN_VE": "mxn_ve_cli", "PAN_VE": "pan_ve_cli",
+      "VE_USA": "ve_usd_cli", "VE_BRL": "ve_brl_cli", "VE_DOP": "ve_dop_cli", "VE_COP": "ve_cop_cli",
+      "VE_PEN": "ve_pen_cli", "VE_CLP": "ve_clp_cli", "VE_ECD": "ve_ecd_cli", "VE_MXN": "ve_mxn_cli", "VE_PAN": "ve_pan_cli"
+    };
+    tasaCliente = variablesGlobales[mapaVariablesDirectas[trayecto]] || 0;
+  }
+
+  // Asignar Tasa del Sistema CON SOLO 2 DECIMALES
+  const inputTasa = document.getElementById('calc-tasa-input');
+  if (inputTasa) {
+    inputTasa.value = tasaCliente.toFixed(2);
+  }
+
+  // Calcular el monto a recibir según el sentido de la transacción
+  let resultado = 0;
+  if (tasaCliente > 0) {
+    if (trayecto.startsWith("VE_")) {
+      resultado = monto / tasaCliente;
+    } else {
+      resultado = monto * tasaCliente;
+    }
+  }
+
+  // Formatear el resultado en pantalla
+  const elResultado = document.getElementById('calc-resultado-monto');
+  if (elResultado) {
+    const sufijo = sufijosResultado[trayecto] || "";
+    elResultado.innerText = ${resultado.toFixed(2)} ${sufijo};
+  }
+};
   </script>
 </body>
 </html>
