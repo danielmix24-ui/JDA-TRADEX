@@ -2168,64 +2168,33 @@
       "VE_MXN": { sym: "VES", res: "MXN", name: "Venezuela ➔ México" },
       "VE_PAN": { sym: "VES", res: "USD", name: "Venezuela ➔ Panamá" }
     };
-
+  
     window.ejecutarCalculoCotizacion = function() {
-      const trayecto = document.getElementById('calc-trayecto').value;
-      const monto = parseFloat(document.getElementById('calc-monto-input').value) || 0;
-      const key = routeKeyMap[trayecto];
-      
-      // Obtener tasa asignada al cliente
-      let tasa = variablesGlobales[key + "_ve_cli"] || variablesGlobales["ve_" + key + "_cli"] || 1;
-      if (trayecto === "USA_VE") tasa = variablesGlobales.usd_ve_cli;
-      if (trayecto === "ECD_VE") tasa = variablesGlobales.ecd_ve_cli;
-      if (trayecto === "PAN_VE") tasa = variablesGlobales.pan_ve_cli;
-      if (trayecto === "BRL_VE") tasa = variablesGlobales.brl_ve_cli;
-      
-      
-      const configMoneda = calcMonedasMap[trayecto];
-      document.getElementById('calc-moneda-sym').innerText = configMoneda.sym;
-      document.getElementById('calc-tasa-input').value = tasa;
-
-      let resultado = 0;
-      if (trayecto.startsWith("VE_")) {
-        resultado = monto / tasa;
-      } else {
-        resultado = monto * tasa;
-      }
-
-      document.getElementById('calc-resultado-monto').innerText = resultado.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " " + configMoneda.res;
+    const trayecto = document.getElementById('calc-trayecto').value;
+    const montoInput = parseFloat(document.getElementById('calc-monto-input').value) || 0;
+    
+    // Mapeo del trayecto a la clave de tasa cliente en variablesGlobales
+    const mapTasasCli = {
+        "USA_VE": "usd_ve_cli", "BRL_VE": "brl_ve_cli", "DOP_VE": "do_ve_cli",
+        "COP_VE": "co_ve_cli",  "PEN_VE": "pen_ve_cli", "CLP_VE": "clp_ve_cli",
+        "ECD_VE": "ecd_ve_cli", "MXN_VE": "mxn_ve_cli", "PAN_VE": "pan_ve_cli",
+        
+        "VE_USA": "ve_usd_cli", "VE_BRL": "ve_brl_cli", "VE_DOP": "ve_dop_cli",
+        "VE_COP": "ve_cop_cli", "VE_PEN": "ve_pen_cli", "VE_CLP": "ve_clp_cli",
+        "VE_ECD": "ve_ecd_cli", "VE_MXN": "ve_mxn_cli", "VE_PAN": "ve_pan_cli"
     };
 
-    window.generarTextoCotizacion = function() {
-      const trayecto = document.getElementById('calc-trayecto').value;
-      const monto = parseFloat(document.getElementById('calc-monto-input').value) || 0;
-      const tasa = document.getElementById('calc-tasa-input').value;
-      const resultado = document.getElementById('calc-resultado-monto').innerText;
-      const configMoneda = calcMonedasMap[trayecto];
-
-      return `*🛡️ JDA TRADEX — COTIZACIÓN DE ENVÍO*\n\n` +
-             `🌐 *Ruta:* ${configMoneda.name}\n` +
-             `💵 *Monto a enviar:* ${monto} ${configMoneda.sym}\n` +
-             `📈 *Tasa aplicada:* ${tasa}\n` +
-             `💰 *Total a recibir:* ${resultado}\n\n` +
-             `_¡Gracias por preferir a JDA TRADEX!_ ⚡`;
+    const mapSimbolos = {
+        "USA_VE": "$",   "BRL_VE": "R$", "DOP_VE": "RD$", "COP_VE": "COP$", "PEN_VE": "S/", "CLP_VE": "CLP$", "ECD_VE": "$",   "MXN_VE": "MEX$", "PAN_VE": "$",
+        "VE_USA": "Bs.", "VE_BRL": "Bs.", "VE_DOP": "Bs.",  "VE_COP": "Bs.",   "VE_PEN": "Bs.", "VE_CLP": "Bs.",   "VE_ECD": "Bs.", "VE_MXN": "Bs.",  "VE_PAN": "Bs."
     };
 
-    window.compartirCotizacionWhatsApp = function() {
-      const texto = encodeURIComponent(window.generarTextoCotizacion());
-      window.open(`https://api.whatsapp.com/send?text=${texto}`, '_blank');
+    const mapMonedaSalida = {
+        "USA_VE": "VES", "BRL_VE": "VES", "DOP_VE": "VES", "COP_VE": "VES", "PEN_VE": "VES", "CLP_VE": "VES", "ECD_VE": "VES", "MXN_VE": "VES", "PAN_VE": "VES",
+        "VE_USA": "USD", "VE_BRL": "BRL", "VE_DOP": "DOP", "VE_COP": "COP", "VE_PEN": "PEN", "VE_CLP": "CLP", "VE_ECD": "USD", "VE_MXN": "MXN", "VE_PAN": "USD"
     };
 
-    window.compartirCotizacionExterna = function() {
-      const texto = window.generarTextoCotizacion();
-      if (navigator.share) {
-        navigator.share({ title: 'Cotización JDA TRADEX', text: texto });
-      } else {
-        navigator.clipboard.writeText(texto);
-        window.pushNotification("✅ Cotización copiada al portapapeles.");
-      }
-    };
-      // Obtener la tasa de la estructura global
+    // Obtener la tasa de la estructura global
     const claveTasa = mapTasasCli[trayecto];
     const tasaRaw = variablesGlobales[claveTasa] || 0;
     
@@ -2259,6 +2228,7 @@
         resEl.innerText = ${resultado.toFixed(2)} ${monedaSalida};
     }
 };
+    
   </script>
 </body>
 </html>
