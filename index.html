@@ -726,7 +726,7 @@
               </div>
               <div class="field">
                 <label>Tasa del Sistema</label>
-                <input type="text" id="calc-tasa-input" readonly step="0,01" style="color:var(--gold); font-weight:bold;">
+                <input type="text" id="calc-tasa-input" readonly step="0.01" style="color:var(--gold); font-weight:bold;">
               </div>
             </div>
 
@@ -1204,7 +1204,48 @@
         else if(['prestamos','bancos','config', 'usuarios'].includes(pageId)) document.getElementById('m-nav-admin-trigger').classList.add('active');
     };
 
-    window.gotoMobile = function(pageId) { const iDummy = document.createElement('div'); window.goto(pageId, iDummy); };
+    window.gotoMobile = function(pageId) { const iDummy = document.createElement('div'); window.goto(pageId, iDummy;
+if (pageId === 'calculadora') }                                     
+    };
+    
+  window.ejecutarCalculoCotizacion();  
+    window.ejecutarCalculoCotizacion = function() {
+  const trayecto = document.getElementById('calc-trayecto').value;
+  const monto = parseFloat(document.getElementById('calc-monto-input').value) || 0;
+  
+  // Mapeo de clave de tasa según el trayecto seleccionado
+  const keyTasa = routeKeyMap[trayecto];
+  
+  // Obtener la tasa cliente según la estructura del trayecto
+  let tasaCliente = 0;
+  if (trayecto.startsWith("VE_")) {
+    tasaCliente = variablesGlobales[keyTasa + '_cli'] || variablesGlobales['ve_' + keyTasa.replace('out_', '') + '_cli'] || 0;
+  } else {
+    tasaCliente = variablesGlobales[keyTasa + '_ve_cli'] || variablesGlobales[keyTasa + '_cli'] || 0;
+  }
+
+  // Asignar la tasa formateada al input de la Calculadora (Sin exceso de decimales)
+  const inputTasa = document.getElementById('calc-tasa-input');
+  if (inputTasa) {
+    inputTasa.value = window.formatearTasaLimpia(tasaCliente);
+  }
+
+  // Cálculo del resultado a recibir
+  let resultado = 0;
+  if (trayecto.startsWith("VE_")) {
+    resultado = tasaCliente > 0 ? (monto / tasaCliente) : 0;
+  } else {
+    resultado = monto * tasaCliente;
+  }
+
+  // Pintar el monto resultante en pantalla
+  const lblResultado = document.getElementById('calc-resultado-monto');
+  if (lblResultado) {
+    const esSalida = trayecto.startsWith("VE_");
+    const monedaDestino = esSalida ? "USD" : "VES";
+    lblResultado.innerText = resultado.toFixed(2) + " " + monedaDestino;
+  }
+};
 
     window.autoCalcularEstructuraCompleta = function(escribirFirebase = true) {
     const refUsdtInput = document.getElementById('calc-ref-usdt');
