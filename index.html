@@ -2192,6 +2192,11 @@
       if (trayecto === "PEN_VE") tasa = variablesGlobales.pen_ve_cli;
       if (trayecto === "CLP_VE") tasa = variablesGlobales.clp_ve_cli;
       if (trayecto === "MXN_VE") tasa = variablesGlobales.mxn_ve_cli;
+      
+      if (trayecto === "VE_USA") tasa = variablesGlobales.ve_usd_cli;
+      if (trayecto === "VE_ECD") tasa = variablesGlobales.ve_ecd_cli;
+      if (trayecto === "VE_PAN") tasa = variablesGlobales.ve_pan_cli;
+      if (trayecto === "VE_BRL") tasa = variablesGlobales.ve_brl_cli;
 
       const numTasa = parseFloat(tasa) || 0;
       const configMoneda = calcMonedasMap[trayecto];
