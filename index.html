@@ -2207,7 +2207,7 @@
         resultado = monto * numTasa;
       }
 
-      document.getElementById('calc-resultado-monto').innerText = resultado.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " " + configMoneda.res;
+      document.getElementById('calc-resultado-monto').innerText = resultado.toLocaleString('es-VE', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " " + configMoneda.res;
     };
 
     window.generarTextoCotizacion = function() {
