@@ -2204,7 +2204,7 @@
       if (trayecto.startsWith("VE_")) {
         resultado = numTasa > 0 ? monto / numTasa : 0;
       } else {
-        resultado = monto * numTasa;
+        resultado = monto * parseFloat(numTasa.toFixed(2));
       }
 
       document.getElementById('calc-resultado-monto').innerText = resultado.toLocaleString('es-VE', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " " + configMoneda.res;
