@@ -2212,7 +2212,7 @@
         resultado = monto * numTasa;
       }
 
-      document.getElementById('calc-resultado-monto').innerText = resultado.toLocaleString('de-DE', Number.isInteger(resultado) ? { minimumFractionDigits: 0 } : { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " " + configMoneda.res;
+      document.getElementById('calc-resultado-monto').innerText = resultado.toLocaleString('de-DE', Number.isInteger(resultado) ? { minimumFractionDigits: 0 } : { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " " + configMoneda.res;
     };
 
     window.generarTextoCotizacion = function() {
