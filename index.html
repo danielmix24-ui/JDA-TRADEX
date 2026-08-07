@@ -1746,7 +1746,7 @@
                     <div style="display:flex; gap:4px; flex-wrap:wrap;">
                         <button class="btn btn-g btn-sm btn-ver-trans">👁️ Ver Transacción</button>
                         <button class="btn btn-purple btn-sm btn-ver-gan">💰 Ver Ganancias</button>
-                        ${(r.estado || '').toLowerCase() !== 'procesada' ? `<button class="btn btn-success btn-sm btn-proc-trans">⚡ Procesar Orden</button>` : ''}
+                        ${((r.estado || '').toLowerCase() !== 'procesada' && esAdmin) ? `<button class="btn btn-success btn-sm btn-proc-trans">⚡ Procesar Orden</button>` : ''}
                         ${esAdmin ? `<button class="btn btn-danger btn-sm btn-del-trans">🗑️ Borrar</button>` : ''}
                     </div>
                 </td>
