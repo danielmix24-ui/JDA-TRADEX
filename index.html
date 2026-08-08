@@ -2392,6 +2392,68 @@
         window.pushNotification("✅ Cotización copiada al portapapeles.");
       }
     };
+    window.verDetalleRemesa = function(id) {
+  const item = historialRemesas.find(r => r.id === id);
+  if (!item) return;
+
+  const html = `
+    <div style="font-family: monospace; white-space: pre-wrap; font-size: 13px;">
+========================================
+💸 *JDA TRADEX — COMPROBANTE DE ORDEN*
+========================================
+*ID Orden:* ${item.id}
+*Fecha / Hora:* ${item.fecha}
+*Estado:* ${item.estado.toUpperCase()}
+*Operador:* ${item.vendedor || 'admin'}
+
+----------------------------------------
+👤 *DATOS DEL CLIENTE Y DESTINATARIO*
+----------------------------------------
+*Cliente (Remitente):* ${item.remitente}
+*Datos Destinatario:* ${item.destinatario}
+
+----------------------------------------
+📊 *VALORES Y LIQUIDACIÓN*
+----------------------------------------
+*Trayecto:* ${item.trayecto.replace('_', ' ➔ ')}
+*Monto Base Enviado:* ${item.monto.toFixed(2)} ${item.moneda}
+*Tasa Aplicada al Cliente:* ${item.tasa}
+*Monto Neto Líquido a Entregar:* ${item.neto.toFixed(2)} ${item.monedaDestino}
+
+========================================
+Gracias por confiar en *JDA TRADEX* ⚡
+========================================
+    </div>
+  `;
+
+  document.getElementById('detalle-orden-contenido').innerHTML = html;
+
+  // Configurar listeners de compartir directamente en las acciones de la modal
+  const btnWA = document.getElementById('btn-compartir-whatsapp');
+  const btnExt = document.getElementById('btn-compartir-externo');
+
+  if (btnWA) {
+    btnWA.onclick = () => {
+      const textToShare = document.getElementById('detalle-orden-contenido').innerText;
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(textToShare)}`, '_blank');
+    };
+  }
+
+  if (btnExt) {
+    btnExt.onclick = () => {
+      const textToShare = document.getElementById('detalle-orden-contenido').innerText;
+      if (navigator.share) {
+        navigator.share({ title: `Orden JDA TRADEX #${item.id}`, text: textToShare }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(textToShare);
+        mostrarNotificacion('📋 Comprobante copiado al portapapeles');
+      }
+    };
+  }
+
+  openModal('modal-ver-orden');
+};
+    
   </script>
 </body>
 </html>
