@@ -1636,37 +1636,67 @@
        ACCIONES Y MODALES PEDIDOS PARA REMESAS
        ========================================================================== */
     window.verDetalleRemesa = function(key) {
-        const r = historialRemesas.find(item => item.firebaseUrlKey === key);
-        if(!r) return;
-        const cli = listaClientes.find(c => c.nombre === r.remitente) || {};
-        
-        const html = `
-            <div style="font-size:13.5px; line-height:1.7;">
-                <p><strong>ID Transacción:</strong> <code>${r.firebaseUrlKey}</code></p>
-                <p><strong>Fecha/Hora:</strong> ${r.fecha || 'N/A'}</p>
-                <p><strong>Vendedor / Operador:</strong> ${r.vendedor || 'Sistema'}</p>
-                <hr style="border:0; border-top:1px solid var(--border); margin:10px 0;">
-                <p style="color:var(--gold); font-weight:bold;">👤 INFORMACIÓN DEL CLIENTE</p>
-                <p><strong>Nombre Cliente:</strong> ${r.remitente || 'N/A'}</p>
-                <p><strong>Cédula / ID:</strong> ${cli.cedula || 'No registrada'}</p>
-                <p><strong>Teléfono:</strong> ${cli.telefono || 'No registrado'}</p>
-                <p><strong>País:</strong> ${cli.pais || 'No registrado'}</p>
-                <p><strong>Banco Frecuente:</strong> ${cli.banco || 'No registrado'}</p>
-                <p><strong>Nro. Cuenta Cliente:</strong> <code style="color:var(--gold); font-size:13px;">${cli.cuenta || 'No registrado'}</code></p>
-                <hr style="border:0; border-top:1px solid var(--border); margin:10px 0;">
-                <p style="color:var(--success); font-weight:bold;">💸 DETALLES DE LA OPERACIÓN</p>
-                <p><strong>Trayecto:</strong> ${r.trayecto || 'N/A'}</p>
-                <p><strong>Monto Base Enviado:</strong> ${r.monto || '0.00'}</p>
-                <p><strong>Tasa Real Mercado:</strong> ${r.tasaReal || 'N/A'}</p>
-                <p><strong>Tasa Aplicada al Cliente:</strong> <strong style="color:var(--gold);">${r.tasaCliente || r.tasa || '0.00'}</strong></p>
-                <p><strong>Monto Neto Líquido:</strong> <strong style="color:var(--success); font-size:15px;">${r.neto || '0.00'}</strong></p>
-                <p><strong>Datos Destinatario:</strong> ${r.destinatario || 'N/A'}</p>
-                <p><strong>Estado:</strong> <span class="badge badge-${(r.estado || 'procesando').toLowerCase()}">${r.estado || 'Procesando'}</span></p>
-            </div>
-        `;
-        document.getElementById('detalle-especifico-contenido').innerHTML = html;
-        openModal('modal-detalle-especifico');
+    window.verDetalleRemesa = function(id) {
+  const item = historialRemesas.find(r => r.id === id);
+  if (!item) return;
+
+  const html = `
+    <div style="font-family: monospace; white-space: pre-wrap; font-size: 13px;">
+========================================
+💸 *JDA TRADEX — COMPROBANTE DE ORDEN*
+========================================
+*ID Orden:* ${item.id}
+*Fecha / Hora:* ${item.fecha}
+*Estado:* ${item.estado.toUpperCase()}
+*Operador:* ${item.vendedor || 'admin'}
+
+----------------------------------------
+👤 *DATOS DEL CLIENTE Y DESTINATARIO*
+----------------------------------------
+*Cliente (Remitente):* ${item.remitente}
+*Datos Destinatario:* ${item.destinatario}
+
+----------------------------------------
+📊 *VALORES Y LIQUIDACIÓN*
+----------------------------------------
+*Trayecto:* ${item.trayecto.replace('_', ' ➔ ')}
+*Monto Base Enviado:* ${item.monto.toFixed(2)} ${item.moneda}
+*Tasa Aplicada al Cliente:* ${item.tasa}
+*Monto Neto Líquido a Entregar:* ${item.neto.toFixed(2)} ${item.monedaDestino}
+
+========================================
+Gracias por confiar en *JDA TRADEX* ⚡
+========================================
+    </div>
+  `;
+
+  document.getElementById('detalle-orden-contenido').innerHTML = html;
+
+  // Configurar listeners de compartir directamente en las acciones de la modal
+  const btnWA = document.getElementById('btn-compartir-whatsapp');
+  const btnExt = document.getElementById('btn-compartir-externo');
+
+  if (btnWA) {
+    btnWA.onclick = () => {
+      const textToShare = document.getElementById('detalle-orden-contenido').innerText;
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(textToShare)}`, '_blank');
     };
+  }
+
+  if (btnExt) {
+    btnExt.onclick = () => {
+      const textToShare = document.getElementById('detalle-orden-contenido').innerText;
+      if (navigator.share) {
+        navigator.share({ title: `Orden JDA TRADEX #${item.id}`, text: textToShare }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(textToShare);
+        mostrarNotificacion('📋 Comprobante copiado al portapapeles');
+      }
+    };
+  }
+
+  openModal('modal-ver-orden');
+};
 
     window.verGananciasRemesa = function(key) {
         const r = historialRemesas.find(item => item.firebaseUrlKey === key);
