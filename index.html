@@ -1852,7 +1852,7 @@
         openModal('modal-pagar-interes');
     };
 
-    function confirmarPagoInteres() {
+    function confirmarPagoIntereses() {
         if(!prestamoSeleccionadoParaPago) return;
         const p = listaPrestamos.find(item => item.firebaseUrlKey === prestamoSeleccionadoParaPago);
         if(!p) return;
