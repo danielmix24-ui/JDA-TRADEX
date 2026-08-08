@@ -2297,7 +2297,7 @@
         });
 
         historialPrestamos.forEach(h => {
-            if(h.tipoAccion === "Pago de Interés") {
+              if(h.tipoAccion && (h.tipoAccion.includes("Interés") || h.tipoAccion.includes("Intereses"))) {
                 totalIntereses += parseFloat(h.montoBase || 0);
             }
         });
