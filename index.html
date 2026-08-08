@@ -1665,6 +1665,36 @@
             </div>
         `;
         document.getElementById('detalle-especifico-contenido').innerHTML = html;
+
+      // Configuración de botones de compartir (WhatsApp y Compartir Externo / Copiar)
+  const btnWA = document.getElementById('btn-compartir-whatsapp');
+  const btnExt = document.getElementById('btn-compartir-externo');
+
+  if (btnWA) {
+    btnWA.onclick = () => {
+      const textToShare = document.getElementById('detalle-orden-contenido').innerText;
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(textToShare)}`, '_blank');
+    };
+  }
+
+  if (btnExt) {
+    btnExt.onclick = () => {
+      const textToShare = document.getElementById('detalle-orden-contenido').innerText;
+      if (navigator.share) {
+        navigator.share({
+          title: `Orden JDA TRADEX #${item.id}`,
+          text: textToShare
+        }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(textToShare);
+        if (typeof mostrarNotificacion === 'function') {
+          mostrarNotificacion('📋 Comprobante copiado al portapapeles');
+        } else {
+          alert('📋 Comprobante copiado al portapapeles');
+        }
+      }
+    };
+  }
         openModal('modal-detalle-especifico');
     };
 
